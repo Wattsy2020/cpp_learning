@@ -1,3 +1,12 @@
+# ignore extensionless files (i.e. the binaries)
+*
+!*/
+!*.*
+
+# vs code settings
+*.json
+*.plist
+
 # Prerequisites
 *.d
 
