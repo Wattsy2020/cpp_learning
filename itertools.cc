@@ -33,18 +33,14 @@ size_t _bound_index(int idx, const size_t length)
 }
 
 // Slice a vector from [start, end)  (i.e. not including the end index)
+// Handles negative numbers and slices where end > length
 template <typename T>
 std::vector<T> slice(const std::vector<T> &vec, int start, int end)
 {
-    // Handle negative numbers, and bound the numbers
-    size_t length = vec.size();
-    size_t start_idx = _bound_index(start, length);
-    size_t end_idx = _bound_index(end, length);
-
-    std::vector<T> sliced(end_idx - start_idx);
-    auto start_it = vec.begin() + start_idx;
-    auto end_it = vec.begin() + end_idx;
-    std::copy(start_it, end_it, sliced.begin());
+    size_t length{vec.size()};
+    size_t start_idx{_bound_index(start, length)};
+    size_t end_idx{_bound_index(end, length)};
+    std::vector<T> sliced(vec.begin() + start_idx, vec.begin() + end_idx);
     return sliced;
 }
 
@@ -58,6 +54,13 @@ std::vector<std::tuple<T1, T2>> zip(const std::vector<T1> &vec1, const std::vect
     for (size_t i = 0; i < min_length; i++)
         result.push_back(std::make_tuple(vec1[i], vec2[i]));
     return result;
+}
+
+// Return vector of tuples (item, next item)
+template <typename T>
+std::vector<std::tuple<T, T>> pairwise(const std::vector<T> &vec)
+{
+    return zip(vec, slice(vec, 1, vec.size()));
 }
 
 int main()
@@ -79,7 +82,9 @@ int main()
 
     // test the power of generics
     std::vector<std::string> str_vec{"this", "is", "a", "string", "vector", "cool"};
-    auto sliced = slice(str_vec, -4, -1);
+    auto sliced{slice(str_vec, -4, -1)};
     std::cout << sliced << std::endl;
     std::cout << zip(sliced, test_vec) << std::endl;
+
+    std::cout << pairwise(test_vec) << std::endl;
 }
