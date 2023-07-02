@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <assert.h>
+#include "math.h"
 
 template <typename T1, typename T2>
 std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
@@ -44,6 +46,18 @@ std::vector<T> slice(const std::vector<T> &vec, int start, int end)
     return sliced;
 }
 
+std::vector<int> range(int start, int end, int step = 1)
+{
+    if (start > end)
+        assert(step < 0);
+
+    std::vector<int> result;
+    int sign = signum(end - start);
+    for (int i = start; sign * i < sign * end; i = i + step)
+        result.push_back(i);
+    return result;
+}
+
 // Merge two vectors together, returning a vector where vec[i] = tuple{vec1[i], vec2[i]}
 // Stop at the end of the shortest vector
 template <typename T1, typename T2>
@@ -54,6 +68,13 @@ std::vector<std::tuple<T1, T2>> zip(const std::vector<T1> &vec1, const std::vect
     for (size_t i = 0; i < min_length; i++)
         result.push_back(std::make_tuple(vec1[i], vec2[i]));
     return result;
+}
+
+// Return tuple of i and the vector item at i
+template <typename T>
+std::vector<std::tuple<int, T>> enumerate(const std::vector<T> &vec)
+{
+    return zip(range(0, vec.size()), vec);
 }
 
 // Return vector of tuples (item, next item)

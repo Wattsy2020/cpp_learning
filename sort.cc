@@ -23,11 +23,12 @@ void bubblesort(std::vector<int> &nums)
     do
     {
         swaps = 0;
-        for (size_t i = 0; i < nums.size() - 1; i++)
+        for (const auto [idx, data] : enumerate(pairwise(nums)))
         {
-            if (nums[i] > nums[i + 1])
+            const auto [num, num_next] = data;
+            if (num > num_next)
             {
-                std::swap(nums[i], nums[i + 1]);
+                std::swap(nums[idx], nums[idx + 1]);
                 swaps++;
             }
         }
@@ -90,5 +91,4 @@ int main()
     }
 
     std::cout << slice(vect, 0, 2) << std::endl;
-    // do performance test of quicksort using large vec of random numbers, and print only the head using slicing
 }

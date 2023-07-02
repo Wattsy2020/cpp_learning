@@ -27,4 +27,13 @@ int main()
     std::cout << zip(sliced, test_vec) << std::endl;
 
     std::cout << pairwise(test_vec) << std::endl;
+
+    // test range
+    std::cout << range(0, 5) << std::endl;
+    std::cout << range(2, 10) << std::endl;
+    std::cout << range(2, 10, 2) << std::endl;
+    std::cout << range(2, 10, 3) << std::endl;
+    std::cout << range(10, -4, -1) << std::endl;
+
+    std::cout << enumerate(str_vec) << std::endl;
 }
