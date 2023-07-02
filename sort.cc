@@ -2,35 +2,18 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include "itertools.h"
 
 std::string to_str(bool b)
 {
     return (b) ? "true" : "false";
 }
 
-std::string to_str(std::vector<int> nums)
+bool is_sorted(const std::vector<int> &nums)
 {
-    std::stringstream result;
-    result << "[ ";
-    for (const int num : nums)
-        result << num << " ";
-    result << "]";
-    return result.str();
-}
-
-std::ostream &operator<<(std::ostream &os, std::vector<int> vect)
-{
-    os << to_str(vect);
-    return os;
-}
-
-bool is_sorted(std::vector<int> nums)
-{
-    for (size_t i = 1; i < nums.size(); i++)
-    {
-        if (nums[i] < nums[i - 1])
+    for (const auto [num, next_num] : pairwise(nums))
+        if (num > next_num)
             return false;
-    }
     return true;
 }
 
@@ -105,4 +88,7 @@ int main()
         quicksort(vec);
         std::cout << vec << std::endl;
     }
+
+    std::cout << slice(vect, 0, 2) << std::endl;
+    // do performance test of quicksort using large vec of random numbers, and print only the head using slicing
 }
