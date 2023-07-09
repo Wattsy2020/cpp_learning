@@ -26,7 +26,7 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
 
 // Keep the idx within the bounds of 0, and the vector's length (for slicing only)
 // if idx is out of bounds, will bind it to the minimum
-constexpr size_t _bound_index(const int idx, const size_t length)
+constexpr size_t _bound_index(const int &idx, const size_t &length)
 {
     if (idx < 0)
         return size_t(std::max(int(length) + idx, 0)); // cast to avoid overflow when length + idx < 0
@@ -36,7 +36,7 @@ constexpr size_t _bound_index(const int idx, const size_t length)
 // Slice a vector from [start, end)  (i.e. not including the end index)
 // Handles negative numbers and slices where end > length
 template <typename T>
-constexpr std::vector<T> slice(const std::vector<T> &vec, const int start, const int end)
+constexpr std::vector<T> slice(const std::vector<T> &vec, const int &start, const int &end)
 {
     size_t length{vec.size()};
     size_t start_idx{_bound_index(start, length)};
@@ -45,14 +45,14 @@ constexpr std::vector<T> slice(const std::vector<T> &vec, const int start, const
     return std::vector<T>(vec.begin() + start_idx, vec.begin() + end_idx);
 }
 
-std::vector<int> range(int start, int end, int step = 1)
+std::vector<int> range(const int &start, const int &end, const int &step = 1)
 {
     if (start > end)
         assert(step < 0);
 
-    std::vector<int> result;
-    int sign = signum(end - start);
-    for (int i = start; sign * i < sign * end; i = i + step)
+    std::vector<int> result{};
+    int sign{signum(end - start)};
+    for (int i{start}; sign * i < sign * end; i = i + step)
         result.push_back(i);
     return result;
 }
@@ -62,9 +62,9 @@ std::vector<int> range(int start, int end, int step = 1)
 template <typename T1, typename T2>
 std::vector<std::tuple<T1, T2>> zip(const std::vector<T1> &vec1, const std::vector<T2> &vec2)
 {
-    const size_t min_length = std::min(vec1.size(), vec2.size());
-    std::vector<std::tuple<T1, T2>> result;
-    for (size_t i = 0; i < min_length; i++)
+    const size_t min_length{std::min(vec1.size(), vec2.size())};
+    std::vector<std::tuple<T1, T2>> result{};
+    for (size_t i{0}; i < min_length; i++)
         result.push_back(std::make_tuple(vec1[i], vec2[i]));
     return result;
 }
