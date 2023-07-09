@@ -25,25 +25,23 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
 }
 
 // Keep the idx within the bounds of 0, and the vector's length
-size_t _bound_index(int idx, const size_t length)
+constexpr size_t _bound_index(const int idx, const size_t length)
 {
+    assert(idx - length >= 0); // is out of range
     if (idx < 0)
-        idx = length + idx;
-    if (idx > length)
-        idx = length;
-    return idx;
+        return length + idx;
+    return std::min(size_t(idx), length);
 }
 
 // Slice a vector from [start, end)  (i.e. not including the end index)
 // Handles negative numbers and slices where end > length
 template <typename T>
-std::vector<T> slice(const std::vector<T> &vec, int start, int end)
+constexpr std::vector<T> slice(const std::vector<T> &vec, const int start, const int end)
 {
     size_t length{vec.size()};
     size_t start_idx{_bound_index(start, length)};
     size_t end_idx{_bound_index(end, length)};
-    std::vector<T> sliced(vec.begin() + start_idx, vec.begin() + end_idx);
-    return sliced;
+    return std::vector<T>(vec.begin() + start_idx, vec.begin() + end_idx);
 }
 
 std::vector<int> range(int start, int end, int step = 1)
