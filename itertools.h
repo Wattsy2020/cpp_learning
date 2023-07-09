@@ -24,12 +24,12 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
     return os;
 }
 
-// Keep the idx within the bounds of 0, and the vector's length
+// Keep the idx within the bounds of 0, and the vector's length (for slicing only)
+// if idx is out of bounds, will bind it to the minimum
 constexpr size_t _bound_index(const int idx, const size_t length)
 {
-    assert(idx - length >= 0); // is out of range
     if (idx < 0)
-        return length + idx;
+        return size_t(std::max(int(length) + idx, 0)); // cast to avoid overflow when length + idx < 0
     return std::min(size_t(idx), length);
 }
 
@@ -41,6 +41,7 @@ constexpr std::vector<T> slice(const std::vector<T> &vec, const int start, const
     size_t length{vec.size()};
     size_t start_idx{_bound_index(start, length)};
     size_t end_idx{_bound_index(end, length)};
+    // std::cout << start_idx << "," << end_idx << std::endl;
     return std::vector<T>(vec.begin() + start_idx, vec.begin() + end_idx);
 }
 

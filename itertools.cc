@@ -12,6 +12,7 @@ int main()
     std::cout << slice(test_vec, 0, -1) << std::endl;
     std::cout << slice(test_vec, 0, -2) << std::endl;
     std::cout << slice(test_vec, -3, -1) << std::endl;
+    std::cout << slice(test_vec, -1000, 1000) << std::endl; // test slices beyond the bounds work
     std::cout << test_vec << std::endl;
 
     std::vector<int> reversed(test_vec.size());
