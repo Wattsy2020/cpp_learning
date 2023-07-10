@@ -3,11 +3,7 @@
 #include <string>
 #include <sstream>
 #include "itertools.h"
-
-std::string to_str(bool b)
-{
-    return (b) ? "true" : "false";
-}
+#include "string_lib.h"
 
 bool is_sorted(const std::vector<int> &nums)
 {
