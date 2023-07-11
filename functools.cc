@@ -58,8 +58,6 @@ constexpr int count(const std::function<bool(T)> &pred, const std::vector<T> &ve
     return sum(map(pred_to_int, vec));
 }
 
-constexpr bool greater_than_4(const int &num) { return num > 4; };
-
 int main()
 {
     std::vector<bool> bools{true, true, false, false};
