@@ -4,6 +4,23 @@
 #include "itertools.h"
 #include "string_lib.h"
 
+template <typename T1, typename T2>
+constexpr std::vector<T2> map(const std::function<T2(T1)> &func, const std::vector<T1> &vec)
+{
+    std::vector<T2> result{};
+    for (T1 item : vec)
+        result.push_back(func(item));
+    return result;
+}
+
+template <typename T1, typename T2, typename T3>
+constexpr std::function<T3(T1)> compose(const std::function<T2(T1)> &func1, const std::function<T3(T2)> &func2)
+{
+    return std::function<T3(T1)>{
+        [&func1, &func2](T1 input_arg)
+        { return func2(func1(input_arg)); }};
+}
+
 // return true if any element in the vector is true
 constexpr bool any(const std::vector<bool> &bools)
 {
@@ -22,21 +39,17 @@ constexpr bool all(const std::vector<bool> &bools)
     return true;
 }
 
-template <typename T1, typename T2>
-constexpr std::vector<T2> map(const std::function<T2(T1)> &func, const std::vector<T1> &vec)
+// TODO: redo this in an iterator style like python, so we can lazily map. Is probably possible in C++
+template <typename T>
+constexpr bool any(const std::function<bool(T)> &predicate, const std::vector<T> &vec)
 {
-    std::vector<T2> result{};
-    for (T1 item : vec)
-        result.push_back(func(item));
-    return result;
+    return any(map(predicate, vec));
 }
 
-template <typename T1, typename T2, typename T3>
-constexpr std::function<T3(T1)> compose(const std::function<T2(T1)> &func1, const std::function<T3(T2)> &func2)
+template <typename T>
+constexpr bool all(const std::function<bool(T)> &predicate, const std::vector<T> &vec)
 {
-    return std::function<T3(T1)>{
-        [&func1, &func2](T1 input_arg)
-        { return func2(func1(input_arg)); }};
+    return all(map(predicate, vec));
 }
 
 // TODO: implement our own reduce, and redo sum using it
@@ -70,4 +83,7 @@ int main()
     std::cout << nums << " " << map(greater_than_3, nums) << std::endl;
     std::cout << nums << " " << map(compose(greater_than_3, std::function<std::string(bool)>(to_str)), nums) << std::endl;
     std::cout << count(greater_than_3, nums) << std::endl;
+
+    std::cout << to_str(all(greater_than_3, nums)) << std::endl;
+    std::cout << to_str(any(greater_than_3, nums)) << std::endl;
 }
