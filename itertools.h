@@ -4,6 +4,7 @@
 #include <string>
 #include <tuple>
 #include <assert.h>
+#include <optional>
 #include "math.h"
 
 template <typename T1, typename T2>
@@ -11,6 +12,17 @@ std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
 {
     auto [first, second] = tuple;
     os << "(" << first << ", " << second << ") ";
+    return os;
+}
+
+// TODO: we could treat optional as an iterator (e.g. with 1 element if some, else 0), and support map over it
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const std::optional<T> &optional)
+{
+    if (optional)
+        os << optional.value();
+    else
+        os << "None";
     return os;
 }
 
