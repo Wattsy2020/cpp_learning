@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <numeric>
 #include "itertools.h"
 #include "string_lib.h"
 
@@ -53,12 +54,10 @@ constexpr bool all(const std::function<bool(T)> &predicate, const std::vector<T>
 }
 
 // TODO: implement our own reduce, and redo sum using it
-constexpr int sum(const std::vector<int> &vec)
+template <typename T>
+constexpr T sum(const std::vector<T> &vec)
 {
-    int result{0};
-    for (const int &num : vec)
-        result += num;
-    return result;
+    return std::accumulate(vec.begin(), vec.end(), T{0}, std::plus<T>());
 }
 
 // TODO: probably can do this better
@@ -83,6 +82,9 @@ int main()
     std::cout << nums << " " << map(greater_than_3, nums) << std::endl;
     std::cout << nums << " " << map(compose(greater_than_3, std::function<std::string(bool)>(to_str)), nums) << std::endl;
     std::cout << count(greater_than_3, nums) << std::endl;
+
+    std::cout << sum(std::vector<int>{0, 1, 2, 3, 4}) << std::endl;
+    std::cout << sum(std::vector<double>{-1.333, 1.333, 2.1}) << std::endl;
 
     std::cout << to_str(all(greater_than_3, nums)) << std::endl;
     std::cout << to_str(any(greater_than_3, nums)) << std::endl;
