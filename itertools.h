@@ -10,7 +10,7 @@ template <typename T1, typename T2>
 std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
 {
     auto [first, second] = tuple;
-    os << "(" << first << ", " << second << ") ";
+    os << "(" << first << ", " << second << ")";
     return os;
 }
 
@@ -56,6 +56,15 @@ constexpr std::vector<T> slice(const std::vector<T> &vec, const int &start, cons
     return std::vector<T>(vec.begin() + start_idx, vec.begin() + end_idx);
 }
 
+template <typename T>
+constexpr std::vector<T> reversed(const std::vector<T> &vec)
+{
+    std::vector<T> output_vec(vec.size());
+    std::reverse_copy(vec.begin(), vec.end(), output_vec.begin());
+    return output_vec;
+}
+
+// A vector with items from [start, end) with the given step size
 std::vector<int> range(const int &start, const int &end, const int &step = 1)
 {
     if (start > end)

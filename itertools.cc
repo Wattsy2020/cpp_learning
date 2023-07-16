@@ -1,40 +1,99 @@
 #include <vector>
 #include <iostream>
 #include <tuple>
+#include <sstream>
 #include "itertools.h"
+
+void test_slicing()
+{
+    std::vector<int> test_vec{1, 2, 3, 4, 5};
+    assert(slice(test_vec, 0, 2) == (std::vector<int>{1, 2}));
+    assert(slice(test_vec, 2, 3) == (std::vector<int>{3}));
+    assert(slice(test_vec, 0, 0) == (std::vector<int>{}));
+    assert(slice(test_vec, 0, -1) == (std::vector<int>{1, 2, 3, 4}));
+    assert(slice(test_vec, 0, -2) == (std::vector<int>{1, 2, 3}));
+    assert(slice(test_vec, -3, -1) == (std::vector<int>{3, 4}));
+    assert(slice(test_vec, -1000, 1000) == test_vec);
+}
+
+void test_vector_outstream()
+{
+    std::stringstream stream{};
+    stream << std::vector<int>{1, 2, 3, 4, 5};
+    std::string result(std::istreambuf_iterator(stream), {});
+    assert(result == "[ 1 2 3 4 5 ]");
+}
+
+void test_tuple_outstream()
+{
+    std::stringstream stream{};
+    stream << std::make_tuple<int, int>(1, 2);
+    std::string result(std::istreambuf_iterator(stream), {});
+    assert(result == "(1, 2)");
+}
+
+void test_reversed()
+{
+    std::vector<int> test_vec{1, 2, 3, 4, 5};
+    assert(reversed(test_vec) == (std::vector<int>{5, 4, 3, 2, 1}));
+}
+
+// tests uneven vectors as well
+void test_zip()
+{
+    std::vector<int> test_vec{1, 2, 3};
+    std::vector<int> equal_vec{5, 3, 1};
+    std::vector<std::tuple<int, int>> expected_result{std::make_tuple(1, 5), std::make_tuple(2, 3), std::make_tuple(3, 1)};
+    assert(zip(test_vec, equal_vec) == expected_result);
+
+    std::vector<int> short_vec{slice(equal_vec, 0, 2)};
+    assert(zip(test_vec, short_vec) == slice(expected_result, 0, 2));
+
+    std::vector<int> long_vec{5, 3, 1, -1};
+    assert(zip(test_vec, long_vec) == expected_result);
+}
+
+void test_range()
+{
+    assert(range(0, 5) == (std::vector<int>{0, 1, 2, 3, 4}));
+    assert(range(2, 10) == (std::vector<int>{2, 3, 4, 5, 6, 7, 8, 9}));
+    assert(range(2, 10, 2) == (std::vector<int>{2, 4, 6, 8}));
+    assert(range(2, 10, 3) == (std::vector<int>{2, 5, 8}));
+    assert(range(4, -4, -1) == (std::vector<int>{4, 3, 2, 1, 0, -1, -2, -3}));
+}
+
+void test_pairwise()
+{
+    std::vector<int> test_vec{1, 2, 3};
+    std::vector<std::tuple<int, int>> expected_result{std::make_tuple(1, 2), std::make_tuple(2, 3)};
+    assert(pairwise(test_vec) == expected_result);
+}
+
+void test_enumerate()
+{
+    std::vector<std::string> test_vec{"hello", "world", "!"};
+    std::vector<std::tuple<int, std::string>> expected_result{std::make_tuple(0, "hello"), std::make_tuple(1, "world"), std::make_tuple(2, "!")};
+    assert(enumerate(test_vec) == expected_result);
+}
 
 int main()
 {
-    std::vector<int> test_vec{1, 2, 3, 4, 5};
-    std::cout << slice(test_vec, 0, 2) << std::endl;
-    std::cout << slice(test_vec, 2, 3) << std::endl;
-    std::cout << slice(test_vec, 0, 0) << std::endl;
-    std::cout << slice(test_vec, 0, -1) << std::endl;
-    std::cout << slice(test_vec, 0, -2) << std::endl;
-    std::cout << slice(test_vec, -3, -1) << std::endl;
-    std::cout << slice(test_vec, -1000, 1000) << std::endl; // test slices beyond the bounds work
-    std::cout << test_vec << std::endl;
+    test_slicing();
+    test_vector_outstream();
+    test_tuple_outstream();
+    test_reversed();
+    test_zip();
+    test_range();
+    test_pairwise();
+    test_enumerate();
 
-    std::vector<int> reversed(test_vec.size());
-    std::reverse_copy(test_vec.begin(), test_vec.end(), reversed.begin());
-    std::cout << reversed << std::endl;
-    std::cout << std::make_tuple(1, 2) << std::endl;
-    std::cout << zip(test_vec, reversed) << std::endl;
-
-    // test the power of generics
+    // test the generic
+    std::vector<int> int_vec{1, 2, 3, 4, 5};
     std::vector<std::string> str_vec{"this", "is", "a", "string", "vector", "cool"};
     auto sliced{slice(str_vec, -4, -1)};
     std::cout << sliced << std::endl;
-    std::cout << zip(sliced, test_vec) << std::endl;
-
-    std::cout << pairwise(test_vec) << std::endl;
-
-    // test range
-    std::cout << range(0, 5) << std::endl;
-    std::cout << range(2, 10) << std::endl;
-    std::cout << range(2, 10, 2) << std::endl;
-    std::cout << range(2, 10, 3) << std::endl;
-    std::cout << range(10, -4, -1) << std::endl;
-
+    std::cout << zip(sliced, int_vec) << std::endl;
+    std::cout << pairwise(str_vec) << std::endl;
     std::cout << enumerate(str_vec) << std::endl;
+    std::cout << pairwise(zip(sliced, int_vec)) << std::endl;
 }
