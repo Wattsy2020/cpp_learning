@@ -76,6 +76,13 @@ void test_enumerate()
     assert(enumerate(test_vec) == expected_result);
 }
 
+void test_join()
+{
+    std::vector<int> test_vec{1, 2, 3};
+    std::string result{join(test_vec, " ")};
+    assert(result == "1 2 3");
+}
+
 int main()
 {
     test_slicing();
@@ -87,7 +94,7 @@ int main()
     test_pairwise();
     test_enumerate();
 
-    // test the generic
+    // test if the templating works for strings as well
     std::vector<int> int_vec{1, 2, 3, 4, 5};
     std::vector<std::string> str_vec{"this", "is", "a", "string", "vector", "cool"};
     auto sliced{slice(str_vec, -4, -1)};
@@ -96,4 +103,5 @@ int main()
     std::cout << pairwise(str_vec) << std::endl;
     std::cout << enumerate(str_vec) << std::endl;
     std::cout << pairwise(zip(sliced, int_vec)) << std::endl;
+    std::cout << join(str_vec, " ") << std::endl;
 }

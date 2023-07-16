@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <tuple>
 #include <assert.h>
 #include <optional>
@@ -101,4 +102,25 @@ template <typename T>
 std::vector<std::tuple<T, T>> pairwise(const std::vector<T> &vec)
 {
     return zip(vec, slice(vec, 1, vec.size()));
+}
+
+// Return tuple (first part of vector, last element of vector)
+// Note the vector must contain at least one element
+template <typename T>
+constexpr std::tuple<std::vector<T>, T> initLast(const std::vector<T> &vec)
+{
+    assert(vec.size() > 0);
+    return std::make_tuple(slice(vec, 0, -1), vec[vec.size() - 1]);
+}
+
+// Join elements of a vector together, using the separator
+template <typename T>
+std::string join(const std::vector<T> &vec, const std::string &separator)
+{
+    std::stringstream stream{};
+    auto [init, last] = initLast(vec);
+    for (const T &item : init)
+        stream << item << separator;
+    stream << last;
+    return std::string(std::istreambuf_iterator(stream), {});
 }
