@@ -2,6 +2,7 @@
 #include <iostream>
 #include <tuple>
 #include <sstream>
+#include <exception>
 #include "itertools.h"
 
 void test_slicing()
@@ -60,6 +61,16 @@ void test_range()
     assert(range(2, 10, 2) == (std::vector<int>{2, 4, 6, 8}));
     assert(range(2, 10, 3) == (std::vector<int>{2, 5, 8}));
     assert(range(4, -4, -1) == (std::vector<int>{4, 3, 2, 1, 0, -1, -2, -3}));
+
+    try
+    {
+        range(1, 10, 0);
+    }
+    catch (std::invalid_argument)
+    {
+        return;
+    }
+    assert("test failed, did not raise exception");
 }
 
 void test_pairwise()
@@ -74,6 +85,23 @@ void test_enumerate()
     std::vector<std::string> test_vec{"hello", "world", "!"};
     std::vector<std::tuple<int, std::string>> expected_result{std::make_tuple(0, "hello"), std::make_tuple(1, "world"), std::make_tuple(2, "!")};
     assert(enumerate(test_vec) == expected_result);
+}
+
+void test_init_last()
+{
+    std::vector<int> test_vec{1, 2, 3};
+    std::tuple<std::vector<int>, int> result{init_last(test_vec)};
+    assert(result == std::make_tuple(std::vector<int>{1, 2}, 3));
+
+    try
+    {
+        init_last(std::vector<int>{});
+    }
+    catch (std::length_error)
+    {
+        return;
+    }
+    assert("test failed, did not raise exception");
 }
 
 void test_join()
@@ -93,6 +121,7 @@ int main()
     test_range();
     test_pairwise();
     test_enumerate();
+    test_init_last();
 
     // test if the templating works for strings as well
     std::vector<int> int_vec{1, 2, 3, 4, 5};

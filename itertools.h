@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 #include <tuple>
-#include <assert.h>
+#include <exception>
 #include <optional>
 #include "math.h"
 
@@ -68,10 +68,22 @@ constexpr std::vector<T> reversed(const std::vector<T> &vec)
 // A vector with items from [start, end) with the given step size
 std::vector<int> range(const int &start, const int &end, const int &step = 1)
 {
-    if (start > end)
-        assert(step < 0);
+    if (step == 0)
+    {
+        throw std::invalid_argument("step cannot be 0");
+    }
+    else if (step > 0)
+    {
+        if (start > end)
+            throw std::invalid_argument("need negative step when start > end");
+    }
+    else if (start < end)
+    {
+        throw std::invalid_argument("need positive step when start < end");
+    }
 
-    std::vector<int> result{};
+    std::vector<int>
+        result{};
     int sign{signum(end - start)};
     for (int i{start}; sign * i < sign * end; i = i + step)
         result.push_back(i);
@@ -107,9 +119,10 @@ std::vector<std::tuple<T, T>> pairwise(const std::vector<T> &vec)
 // Return tuple (first part of vector, last element of vector)
 // Note the vector must contain at least one element
 template <typename T>
-constexpr std::tuple<std::vector<T>, T> initLast(const std::vector<T> &vec)
+constexpr std::tuple<std::vector<T>, T> init_last(const std::vector<T> &vec)
 {
-    assert(vec.size() > 0);
+    if (vec.size() == 0)
+        throw std::length_error("Vector must have at least one element");
     return std::make_tuple(slice(vec, 0, -1), vec[vec.size() - 1]);
 }
 
@@ -118,7 +131,7 @@ template <typename T>
 std::string join(const std::vector<T> &vec, const std::string &separator)
 {
     std::stringstream stream{};
-    auto [init, last] = initLast(vec);
+    auto [init, last] = init_last(vec);
     for (const T &item : init)
         stream << item << separator;
     stream << last;
