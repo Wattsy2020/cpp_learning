@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <numeric>
+#include <functional>
 #include "itertools.h"
 #include "string_lib.h"
 

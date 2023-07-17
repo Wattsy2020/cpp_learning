@@ -4,6 +4,7 @@
 #include <sstream>
 #include <exception>
 #include "itertools.h"
+#include "testlib.h"
 
 void test_slicing()
 {
@@ -62,15 +63,9 @@ void test_range()
     assert(range(2, 10, 3) == (std::vector<int>{2, 5, 8}));
     assert(range(4, -4, -1) == (std::vector<int>{4, 3, 2, 1, 0, -1, -2, -3}));
 
-    try
-    {
-        range(1, 10, 0);
-    }
-    catch (std::invalid_argument)
-    {
-        return;
-    }
-    assert("test failed, did not raise exception");
+    std::function<void()> invalid_range{[]()
+                                        { range(1, 10, 0); }};
+    testlib::raises<std::invalid_argument>(invalid_range);
 }
 
 void test_pairwise()
@@ -93,15 +88,9 @@ void test_init_last()
     std::tuple<std::vector<int>, int> result{init_last(test_vec)};
     assert(result == std::make_tuple(std::vector<int>{1, 2}, 3));
 
-    try
-    {
-        init_last(std::vector<int>{});
-    }
-    catch (std::length_error)
-    {
-        return;
-    }
-    assert("test failed, did not raise exception");
+    std::function<void()> call_with_empty_vector{[]()
+                                                 { init_last(std::vector<int>{}); }};
+    testlib::raises<std::length_error>(call_with_empty_vector);
 }
 
 void test_join()
