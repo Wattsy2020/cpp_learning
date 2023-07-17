@@ -6,6 +6,7 @@
 #include "itertools.h"
 #include "string_lib.h"
 
+// TODO: redo this in an iterator style like python, so we can lazily map. Is probably possible in C++
 template <typename T1, typename T2>
 constexpr std::vector<T2> map(const std::function<T2(T1)> &func, const std::vector<T1> &vec)
 {
@@ -50,7 +51,6 @@ constexpr bool all(const std::vector<bool> &bools)
     return true;
 }
 
-// TODO: redo this in an iterator style like python, so we can lazily map. Is probably possible in C++
 template <typename T>
 constexpr bool any(const std::function<bool(T)> &predicate, const std::vector<T> &vec)
 {
@@ -66,7 +66,6 @@ constexpr bool all(const std::function<bool(T)> &predicate, const std::vector<T>
 template <typename T>
 constexpr T plus(const T &num1, const T &num2) { return num1 + num2; }
 
-// TODO: implement our own reduce, and redo sum using it
 // note: no type-safety for templates, unlike haskell I can see this takes any T
 // when really it needs a T that overloads (+)
 template <typename T>
@@ -76,7 +75,6 @@ constexpr T sum(const std::vector<T> &vec)
     // return std::accumulate(vec.begin(), vec.end(), T{0}, std::plus<T>());
 }
 
-// TODO: probably can do this better
 constexpr int bool_to_int(const bool &b) { return int(b); }
 
 template <typename T>
