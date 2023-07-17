@@ -5,48 +5,47 @@
 #include <functional>
 #include "itertools.h"
 
-class IntSet
+template <typename T>
+class Set
 {
 public:
-    IntSet(size_t size = 100000)
-        : hasher{std::hash<int>()},
-          set_values{std::vector<std::optional<int>>(size)},
-          all_items{std::vector<int>{}} {};
+    Set<T>(size_t size = 100000)
+        : hasher{std::hash<T>()},
+          set_values{std::vector<std::optional<T>>(size)},
+          all_items{std::vector<T>{}} {};
 
-    void add(const int &item)
+    void add(const T &item)
     {
-        set_values[hash(item)] = std::optional<int>{item};
+        set_values[hash(item)] = std::optional<T>{item};
         all_items.push_back(item);
     }
 
-    bool contains(const int &item) const
+    bool contains(const T &item) const
     {
-        std::optional<int> set_value{set_values[hash(item)]};
+        std::optional<T> set_value{set_values[hash(item)]};
         if (!set_value)
             return false;
         return set_value.value() == item;
     }
 
-    std::vector<int> items() const { return all_items; }
-
-    friend std::ostream &operator<<(std::ostream &os, const IntSet &set);
-    // TODO: make generic
+    std::vector<T> items() const { return all_items; }
     // TODO: overload constructor to take a vector
 
 private:
-    std::hash<int> hasher;
-    std::vector<std::optional<int>> set_values;
-    std::vector<int> all_items;
-    size_t hash(const int &item) const
+    std::hash<T> hasher;
+    std::vector<std::optional<T>> set_values;
+    std::vector<T> all_items;
+    size_t hash(const T &item) const
     {
         return hasher(item) % set_values.size();
     };
 };
 
-std::ostream &operator<<(std::ostream &os, const IntSet &set)
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const Set<T> &set)
 {
     os << "{ ";
-    for (const int &item : set.items())
+    for (const T &item : set.items())
         os << item << " ";
     os << "}";
     return os;
@@ -54,7 +53,7 @@ std::ostream &operator<<(std::ostream &os, const IntSet &set)
 
 void test_set_contains()
 {
-    IntSet set{};
+    Set<int> set{};
     assert(!set.contains(1));
     assert(!set.contains(1004));
     set.add(1);
@@ -66,7 +65,7 @@ void test_set_contains()
 
 void test_set_items()
 {
-    IntSet set{};
+    Set<int> set{};
     assert(set.items() == std::vector<int>{});
     set.add(1);
     set.add(1004);
@@ -75,7 +74,7 @@ void test_set_items()
 
 void test_set_outstream()
 {
-    IntSet set{};
+    Set<int> set{};
     std::stringstream stream{};
     stream << set;
     assert(std::string(std::istreambuf_iterator<char>(stream), {}) == "{ }");
