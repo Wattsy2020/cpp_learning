@@ -8,14 +8,17 @@
 class IntSet
 {
 public:
-    IntSet(size_t size) : hasher{std::hash<int>()},
-                          set_values{std::vector<std::optional<int>>(size)},
-                          all_items{std::vector<int>{}} {};
+    IntSet(size_t size = 100000)
+        : hasher{std::hash<int>()},
+          set_values{std::vector<std::optional<int>>(size)},
+          all_items{std::vector<int>{}} {};
+
     void add(const int &item)
     {
         set_values[hash(item)] = std::optional<int>{item};
         all_items.push_back(item);
     }
+
     bool contains(const int &item) const
     {
         std::optional<int> set_value{set_values[hash(item)]};
@@ -23,12 +26,12 @@ public:
             return false;
         return set_value.value() == item;
     }
+
     std::vector<int> items() const { return all_items; }
 
     friend std::ostream &operator<<(std::ostream &os, const IntSet &set);
     // TODO: make generic
-    // TODO: overload constructor and add to also take a vector
-    // TODO: implement set arithematic operators, using operator overloading
+    // TODO: overload constructor to take a vector
 
 private:
     std::hash<int> hasher;
@@ -51,7 +54,7 @@ std::ostream &operator<<(std::ostream &os, const IntSet &set)
 
 void test_set_contains()
 {
-    IntSet set(100);
+    IntSet set{};
     assert(!set.contains(1));
     assert(!set.contains(1004));
     set.add(1);
@@ -63,7 +66,7 @@ void test_set_contains()
 
 void test_set_items()
 {
-    IntSet set(100);
+    IntSet set{};
     assert(set.items() == std::vector<int>{});
     set.add(1);
     set.add(1004);
@@ -72,7 +75,7 @@ void test_set_items()
 
 void test_set_outstream()
 {
-    IntSet set(100);
+    IntSet set{};
     std::stringstream stream{};
     stream << set;
     assert(std::string(std::istreambuf_iterator<char>(stream), {}) == "{ }");
