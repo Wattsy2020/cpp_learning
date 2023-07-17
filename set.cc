@@ -8,8 +8,14 @@
 class IntSet
 {
 public:
-    IntSet(size_t size) : set_values{std::vector<std::optional<int>>(size)}, hasher{std::hash<int>()} {};
-    void add(const int &item) { set_values[hash(item)] = std::optional<int>{item}; }
+    IntSet(size_t size) : hasher{std::hash<int>()},
+                          set_values{std::vector<std::optional<int>>(size)},
+                          all_items{std::vector<int>{}} {};
+    void add(const int &item)
+    {
+        set_values[hash(item)] = std::optional<int>{item};
+        all_items.push_back(item);
+    }
     bool contains(const int &item) const
     {
         std::optional<int> set_value{set_values[hash(item)]};
@@ -17,23 +23,17 @@ public:
             return false;
         return set_value.value() == item;
     }
-    std::vector<int> items() const
-    {
-        std::vector<int> set_items{};
-        for (const std::optional<int> &item : set_values)
-            if (item)
-                set_items.push_back(item.value());
-        return set_items;
-    }
+    std::vector<int> items() const { return all_items; }
 
     friend std::ostream &operator<<(std::ostream &os, const IntSet &set);
+    // TODO: make generic
     // TODO: overload constructor and add to also take a vector
     // TODO: implement set arithematic operators, using operator overloading
-    // TODO: make generic
 
 private:
     std::hash<int> hasher;
     std::vector<std::optional<int>> set_values;
+    std::vector<int> all_items;
     size_t hash(const int &item) const
     {
         return hasher(item) % set_values.size();
