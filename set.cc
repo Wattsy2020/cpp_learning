@@ -29,6 +29,15 @@ public:
             add(item);
     };
 
+    constexpr Set<T>(const std::initializer_list<T> &items, size_t const &size = 100000)
+        : hasher{std::hash<T>()},
+          set_values{std::vector<std::vector<T>>(size)},
+          all_items{std::vector<T>{}}
+    {
+        for (const T &item : items)
+            add(item);
+    };
+
     // note mutable T shouldn't be hashed, so we can add a reference here
     void add(const T &item)
     {
@@ -110,6 +119,12 @@ void test_vector_constructor()
     std::vector<int> input_vec{1, 10004};
     Set<int> set(input_vec);
     assert(set.items() == input_vec);
+}
+
+void test_initialiser_list_constructor()
+{
+    Set<int> set{1, 10004};
+    assert(set.items() == (std::vector<int>{1, 10004}));
 }
 
 void test_hash_conflict()
