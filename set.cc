@@ -4,6 +4,7 @@
 #include <sstream>
 #include <functional>
 #include "itertools.h"
+#include "functools.h"
 
 template <typename T>
 class Set
@@ -11,42 +12,42 @@ class Set
 public:
     constexpr Set<T>(const size_t &size = 100000)
         : hasher{std::hash<T>()},
-          set_values{std::vector<std::optional<T>>(size)},
+          set_values{std::vector<std::vector<T>>(size)},
           all_items{std::vector<T>{}} {};
 
     constexpr Set<T>(const T &init_item, const size_t &size = 100000)
         : hasher{std::hash<T>()},
-          set_values{std::vector<std::optional<T>>(size)},
+          set_values{std::vector<std::vector<T>>(size)},
           all_items{std::vector<T>{}} { add(init_item); };
 
     constexpr Set<T>(const std::vector<T> &items, size_t const &size = 100000)
         : hasher{std::hash<T>()},
-          set_values{std::vector<std::optional<T>>(size)},
+          set_values{std::vector<std::vector<T>>(size)},
           all_items{std::vector<T>{}}
     {
         for (const T &item : items)
             add(item);
     };
 
+    // note mutable T shouldn't be hashed, so we can add a reference here
     void add(const T &item)
     {
-        set_values[hash(item)] = std::optional<T>{item};
+        set_values[hash(item)].push_back(item);
         all_items.push_back(item);
     }
 
     bool contains(const T &item) const
     {
-        std::optional<T> set_value{set_values[hash(item)]};
-        if (!set_value)
-            return false;
-        return set_value.value() == item;
+        std::function<bool(T)> is_item{[item](T value)
+                                       { return value == item; }};
+        return any(is_item, set_values[hash(item)]);
     }
 
     std::vector<T> items() const { return all_items; }
 
 private:
     std::hash<T> hasher;
-    std::vector<std::optional<T>> set_values;
+    std::vector<std::vector<T>> set_values; // vector where vector[hash] is a vector containing all elemetns with that hash
     std::vector<T> all_items;
     size_t hash(const T &item) const
     {
@@ -111,6 +112,14 @@ void test_vector_constructor()
     assert(set.items() == input_vec);
 }
 
+void test_hash_conflict()
+{
+    // using a small set size would cause hash conflicts, test if the set class still stores all the items
+    Set<int> set(range(1, 1000), 10);
+    for (const int &i : range(1, 1000))
+        assert(set.contains(i));
+}
+
 int main()
 {
     test_set_contains();
@@ -118,4 +127,5 @@ int main()
     test_set_outstream();
     test_item_constructor();
     test_vector_constructor();
+    test_hash_conflict();
 }
