@@ -1,3 +1,6 @@
+#ifndef ITERTOOLS
+#define ITERTOOLS
+
 #include <vector>
 #include <iostream>
 #include <string>
@@ -137,3 +140,5 @@ std::string join(const std::vector<T> &vec, const std::string &separator)
     stream << last;
     return std::string(std::istreambuf_iterator(stream), {});
 }
+
+#endif
