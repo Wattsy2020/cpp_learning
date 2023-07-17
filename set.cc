@@ -9,10 +9,24 @@ template <typename T>
 class Set
 {
 public:
-    Set<T>(size_t size = 100000)
+    constexpr Set<T>(const size_t &size = 100000)
         : hasher{std::hash<T>()},
           set_values{std::vector<std::optional<T>>(size)},
           all_items{std::vector<T>{}} {};
+
+    constexpr Set<T>(const T &init_item, const size_t &size = 100000)
+        : hasher{std::hash<T>()},
+          set_values{std::vector<std::optional<T>>(size)},
+          all_items{std::vector<T>{}} { add(init_item); };
+
+    constexpr Set<T>(const std::vector<T> &items, size_t const &size = 100000)
+        : hasher{std::hash<T>()},
+          set_values{std::vector<std::optional<T>>(size)},
+          all_items{std::vector<T>{}}
+    {
+        for (const T &item : items)
+            add(item);
+    };
 
     void add(const T &item)
     {
@@ -29,7 +43,6 @@ public:
     }
 
     std::vector<T> items() const { return all_items; }
-    // TODO: overload constructor to take a vector
 
 private:
     std::hash<T> hasher;
@@ -85,9 +98,24 @@ void test_set_outstream()
     assert(std::string(std::istreambuf_iterator<char>(stream), {}) == "{ 1 1004 }");
 }
 
+void test_item_constructor()
+{
+    Set<int> set(3);
+    assert(set.contains(3));
+}
+
+void test_vector_constructor()
+{
+    std::vector<int> input_vec{1, 10004};
+    Set<int> set(input_vec);
+    assert(set.items() == input_vec);
+}
+
 int main()
 {
     test_set_contains();
     test_set_items();
     test_set_outstream();
+    test_item_constructor();
+    test_vector_constructor();
 }
