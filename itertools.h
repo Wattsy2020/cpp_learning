@@ -126,7 +126,7 @@ namespace itertools
     template <typename T>
     constexpr std::tuple<std::vector<T>, T> init_last(const std::vector<T> &vec)
     {
-        if (vec.size() == 0)
+        if (vec.empty())
             throw std::length_error("Vector must have at least one element");
         return std::make_tuple(itertools::slice(vec, 0, -1), vec[vec.size() - 1]);
     }
@@ -135,6 +135,9 @@ namespace itertools
     template <typename T>
     std::string join(const std::vector<T> &vec, const std::string &separator)
     {
+        if (vec.empty())
+            return "";
+
         std::stringstream stream{};
         auto [init, last] = itertools::init_last(vec);
         for (const T &item : init)

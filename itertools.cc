@@ -98,6 +98,7 @@ void test_join()
     std::vector<int> test_vec{1, 2, 3};
     std::string result{itertools::join(test_vec, " ")};
     assert(result == "1 2 3");
+    assert(itertools::join(std::vector<int>{}, " ") == "");
 }
 
 void test_chain()
