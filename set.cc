@@ -73,6 +73,13 @@ std::ostream &operator<<(std::ostream &os, const Set<T> &set)
 
 namespace set
 {
+    // given a set, returns a function that takes an item and checks if it belongs to that set
+    template <typename T>
+    constexpr std::function<bool(T)> get_overlap_func(const Set<T> &set)
+    {
+        return std::bind(&Set<T>::contains, set, std::placeholders::_1);
+    }
+
     template <typename T>
     constexpr Set<T> set_union(const Set<T> &set1, const Set<T> &set2)
     {
@@ -82,9 +89,7 @@ namespace set
     template <typename T>
     constexpr Set<T> _intersection(const std::vector<T> &smaller_items, const Set<T> &larger_set)
     {
-        std::function<bool(T)> overlaps = {[larger_set](const T &item)
-                                           { return larger_set.contains(item); }};
-        return Set<T>(filter(overlaps, smaller_items));
+        return Set<T>(filter(get_overlap_func(larger_set), smaller_items));
     }
 
     template <typename T>
@@ -104,6 +109,18 @@ namespace set
         std::function<bool(T)> no_overlap{[set_right](const T &item)
                                           { return !set_right.contains(item); }};
         return Set<T>(filter(no_overlap, set_left.items()));
+    }
+
+    template <typename T>
+    constexpr bool is_subset(const Set<T> &set_left, const Set<T> &set_right)
+    {
+        return all(get_overlap_func(set_right), set_left.items());
+    }
+
+    template <typename T>
+    constexpr bool is_superset(const Set<T> &set_left, const Set<T> &set_right)
+    {
+        return is_subset(set_right, set_left);
     }
 }
 
@@ -202,6 +219,22 @@ void test_set_difference()
     assert(diff2.items() == (std::vector<int>{4, 5}));
 }
 
+void test_set_is_subset()
+{
+    Set<int> set1{2, 3};
+    Set<int> set2{2, 3, 4, 5};
+    assert(set::is_subset(set1, set2));
+    assert(!set::is_subset(set2, set1));
+}
+
+void test_set_is_superset()
+{
+    Set<int> set1{2, 3};
+    Set<int> set2{2, 3, 4, 5};
+    assert(!set::is_superset(set1, set2));
+    assert(set::is_superset(set2, set1));
+}
+
 int main()
 {
     test_set_add();
@@ -214,4 +247,6 @@ int main()
     test_set_union();
     test_set_intersection();
     test_set_difference();
+    test_set_is_subset();
+    test_set_is_superset();
 }
