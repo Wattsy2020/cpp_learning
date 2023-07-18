@@ -15,24 +15,18 @@ public:
           set_values{std::vector<std::vector<T>>(size)},
           all_items{std::vector<T>{}} {};
 
-    constexpr Set<T>(const T &init_item, const size_t &size = 100000)
-        : hasher{std::hash<T>()},
-          set_values{std::vector<std::vector<T>>(size)},
-          all_items{std::vector<T>{}} { add(init_item); };
+    constexpr Set<T>(const T &init_item, const size_t &size = 100000) : Set<T>(size)
+    {
+        add(init_item);
+    };
 
-    constexpr Set<T>(const std::vector<T> &items, size_t const &size = 100000)
-        : hasher{std::hash<T>()},
-          set_values{std::vector<std::vector<T>>(size)},
-          all_items{std::vector<T>{}}
+    constexpr Set<T>(const std::vector<T> &items, size_t const &size = 100000) : Set<T>(size)
     {
         for (const T &item : items)
             add(item);
     };
 
-    constexpr Set<T>(const std::initializer_list<T> &items, size_t const &size = 100000)
-        : hasher{std::hash<T>()},
-          set_values{std::vector<std::vector<T>>(size)},
-          all_items{std::vector<T>{}}
+    constexpr Set<T>(const std::initializer_list<T> &items, size_t const &size = 100000) : Set<T>(size)
     {
         for (const T &item : items)
             add(item);
