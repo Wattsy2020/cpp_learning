@@ -20,6 +20,16 @@ void test_map()
     assert(result == expected_result);
 }
 
+void test_filter()
+{
+    std::vector<int> nums = itertools::range(1, 8, 2);
+    std::function<bool(int)> greater_than_3{[](int a)
+                                            { return a > 3; }};
+    std::vector<int> result{filter(greater_than_3, nums)};
+    std::vector<int> expected_result{5, 7};
+    assert(result == expected_result);
+}
+
 void test_compose()
 {
     std::function<bool(int)> greater_than_3{[](int a)
@@ -51,6 +61,7 @@ int main()
 {
     test_any_all();
     test_map();
+    test_filter();
     test_compose();
     test_count();
     test_sum();

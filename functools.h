@@ -12,9 +12,19 @@ template <typename T1, typename T2>
 constexpr std::vector<T2> map(const std::function<T2(T1)> &func, const std::vector<T1> &vec)
 {
     std::vector<T2> result{};
-    for (T1 item : vec)
+    for (const T1 &item : vec)
         result.push_back(func(item));
     return result;
+}
+
+template <typename T>
+constexpr std::vector<T> filter(const std::function<bool(T)> &pred, const std::vector<T> &vec)
+{
+    std::vector<T> filtered{};
+    for (const T &item : vec)
+        if (pred(item))
+            filtered.push_back(item);
+    return filtered;
 }
 
 template <typename T1, typename T2, typename T3>
@@ -29,7 +39,7 @@ template <typename ACC, typename VAL>
 constexpr ACC reduce(const std::function<ACC(VAL, ACC)> &reducer, const std::vector<VAL> &vec, const ACC &init)
 {
     ACC result{init};
-    for (const VAL value : vec)
+    for (const VAL &value : vec)
         result = reducer(result, value);
     return result;
 }
