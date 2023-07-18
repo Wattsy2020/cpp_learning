@@ -140,4 +140,15 @@ std::string join(const std::vector<T> &vec, const std::string &separator)
     return std::string(std::istreambuf_iterator(stream), {});
 }
 
+// Chain two vectors together
+// TODO: allow this function to take any number of vectors
+template <typename T>
+constexpr std::vector<T> chain(const std::vector<T> &vec1, const std::vector<T> &vec2)
+{
+    std::vector<T> combined(vec1.size() + vec2.size());
+    std::copy(vec1.begin(), vec1.end(), combined.begin());
+    std::copy(vec2.begin(), vec2.end(), combined.begin() + vec1.size());
+    return combined;
+}
+
 #endif

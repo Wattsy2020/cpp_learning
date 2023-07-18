@@ -100,6 +100,15 @@ void test_join()
     assert(result == "1 2 3");
 }
 
+void test_chain()
+{
+    std::vector<int> vec1{1, 2};
+    std::vector<int> vec2{3, 4, 5};
+    std::vector<int> combined{chain(vec1, vec2)};
+    vec1[0] = 5; // ensure we're copying, not referencing, the input vectors
+    assert(combined == (std::vector<int>{1, 2, 3, 4, 5}));
+}
+
 int main()
 {
     test_slicing();
@@ -112,6 +121,8 @@ int main()
     test_pairwise();
     test_enumerate();
     test_init_last();
+    test_join();
+    test_chain();
 
     // test if the templating works for strings as well
     std::vector<int> int_vec{1, 2, 3, 4, 5};
