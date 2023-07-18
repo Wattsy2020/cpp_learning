@@ -21,6 +21,8 @@ public:
         add(init_item);
     };
 
+    // TODO: figure out if we can combine the std::vector<T> and std::initializer_list<T> constructors
+    // maybe we can have a function that adds an iterator to the set?
     constexpr Set<T>(const std::vector<T> &items, size_t const &size = 100000) : Set<T>(size)
     {
         for (const T &item : items)
@@ -40,6 +42,15 @@ public:
             return;
         set_values[hash(item)].push_back(item);
         all_items.push_back(item);
+    }
+
+    // note this is O(n), if removing multiple items then use set::difference instead, which is also O(n)
+    void remove(const T &item)
+    {
+        if (!contains(item))
+            return;
+        std::erase(set_values[hash(item)], item);
+        std::erase(all_items, item);
     }
 
     bool contains(const T &item) const
@@ -134,6 +145,14 @@ void test_set_add()
     set.add(1);
     assert(set.contains(1));
     assert(set.items() == std::vector<int>{1});
+}
+
+void test_set_remove()
+{
+    Set<int> set{1, 2, 100001};
+    set.remove(1);
+    assert(set.items() == (std::vector<int>{2, 100001}));
+    set.remove(3); // ensure no error is thrown
 }
 
 void test_set_contains()
@@ -238,6 +257,7 @@ void test_set_is_superset()
 int main()
 {
     test_set_add();
+    test_set_remove();
     test_set_contains();
     test_set_items();
     test_set_outstream();
