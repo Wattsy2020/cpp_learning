@@ -57,7 +57,7 @@ public:
     {
         std::function<bool(T)> is_item{[item](T value)
                                        { return value == item; }};
-        return any(is_item, set_values[hash(item)]);
+        return functools::any(is_item, set_values[hash(item)]);
     }
 
     std::vector<T> items() const { return all_items; }
@@ -100,7 +100,7 @@ namespace set
     template <typename T>
     constexpr Set<T> _intersection(const std::vector<T> &smaller_items, const Set<T> &larger_set)
     {
-        return Set<T>(filter(get_overlap_func(larger_set), smaller_items));
+        return Set<T>(functools::filter(get_overlap_func(larger_set), smaller_items));
     }
 
     template <typename T>
@@ -119,13 +119,13 @@ namespace set
     {
         std::function<bool(T)> no_overlap{[set_right](const T &item)
                                           { return !set_right.contains(item); }};
-        return Set<T>(filter(no_overlap, set_left.items()));
+        return Set<T>(functools::filter(no_overlap, set_left.items()));
     }
 
     template <typename T>
     constexpr bool is_subset(const Set<T> &set_left, const Set<T> &set_right)
     {
-        return all(get_overlap_func(set_right), set_left.items());
+        return functools::all(get_overlap_func(set_right), set_left.items());
     }
 
     template <typename T>
