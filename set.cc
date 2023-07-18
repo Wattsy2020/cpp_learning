@@ -118,8 +118,9 @@ void test_initialiser_list_constructor()
 void test_hash_conflict()
 {
     // using a small set size would cause hash conflicts, test if the set class still stores all the items
-    Set<int> set(range(1, 1000), 10);
-    for (const int &i : range(1, 1000))
+    std::vector<int> long_vector{itertools::range(1, 1000)};
+    Set<int> set(long_vector, 10);
+    for (const int &i : long_vector)
         assert(set.contains(i));
 }
 

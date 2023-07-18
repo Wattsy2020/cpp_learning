@@ -6,8 +6,6 @@
 #include <string>
 #include <numeric>
 #include <functional>
-#include "itertools.h"
-#include "string_lib.h"
 
 // TODO: redo this in an iterator style like python, so we can lazily map. Is probably possible in C++
 template <typename T1, typename T2>

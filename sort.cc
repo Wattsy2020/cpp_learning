@@ -7,7 +7,7 @@
 
 bool is_sorted(const std::vector<int> &nums)
 {
-    for (const auto [num, next_num] : pairwise(nums))
+    for (const auto [num, next_num] : itertools::pairwise(nums))
         if (num > next_num)
             return false;
     return true;
@@ -19,7 +19,7 @@ void bubblesort(std::vector<int> &nums)
     do
     {
         swaps = 0;
-        for (const auto [idx, data] : enumerate(pairwise(nums)))
+        for (const auto [idx, data] : itertools::enumerate(itertools::pairwise(nums)))
         {
             const auto [num, num_next] = data;
             if (num > num_next)
@@ -85,6 +85,4 @@ int main()
         quicksort(vec);
         std::cout << vec << std::endl;
     }
-
-    std::cout << slice(vect, 0, 2) << std::endl;
 }

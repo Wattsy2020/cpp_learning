@@ -1,4 +1,6 @@
 #include "functools.h"
+#include "itertools.h"
+#include "string_lib.h"
 
 void test_any_all()
 {
@@ -10,7 +12,7 @@ void test_any_all()
 
 void test_map()
 {
-    std::vector<int> nums = range(1, 8, 2);
+    std::vector<int> nums = itertools::range(1, 8, 2);
     std::function<bool(int)> greater_than_3{[](int a)
                                             { return a > 3; }};
     std::vector<bool> result{map(greater_than_3, nums)};
@@ -32,7 +34,7 @@ void test_count()
 {
     std::function<bool(int)> greater_than_3{[](int a)
                                             { return a > 3; }};
-    std::vector<int> nums = range(1, 8, 2);
+    std::vector<int> nums = itertools::range(1, 8, 2);
     int result{count(greater_than_3, nums)};
     assert(result == 2);
 }
@@ -56,7 +58,7 @@ int main()
     std::vector<bool> bools{true, true, false, false};
     std::cout << to_str(any(bools)) << " " << to_str(all(bools)) << " for " << bools << std::endl;
 
-    std::vector<int> nums = range(1, 20, 2);
+    std::vector<int> nums = itertools::range(1, 20, 2);
     std::function<bool(int)> greater_than_3{[](int a)
                                             { return a > 3; }};
     std::cout << nums << " " << map(compose(greater_than_3, std::function<std::string(bool)>(to_str)), nums) << std::endl;
