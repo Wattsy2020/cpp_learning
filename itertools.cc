@@ -20,18 +20,18 @@ void test_slicing()
 
 void test_vector_outstream()
 {
-    std::stringstream stream{};
-    stream << std::vector<int>{1, 2, 3, 4, 5};
-    std::string result(std::istreambuf_iterator(stream), {});
-    assert(result == "[ 1 2 3 4 5 ]");
+    testlib::assert_outstream(std::vector<int>{1, 2, 3, 4, 5}, "[ 1 2 3 4 5 ]");
 }
 
 void test_tuple_outstream()
 {
-    std::stringstream stream{};
-    stream << std::make_tuple<int, int>(1, 2);
-    std::string result(std::istreambuf_iterator(stream), {});
-    assert(result == "(1, 2)");
+    testlib::assert_outstream(std::make_tuple<int, int>(1, 2), "(1, 2)");
+}
+
+void test_optional_outstream()
+{
+    testlib::assert_outstream(std::optional<int>{}, "None");
+    testlib::assert_outstream(std::optional<int>{2}, "2");
 }
 
 void test_reversed()
@@ -105,6 +105,7 @@ int main()
     test_slicing();
     test_vector_outstream();
     test_tuple_outstream();
+    test_optional_outstream();
     test_reversed();
     test_zip();
     test_range();

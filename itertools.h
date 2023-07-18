@@ -18,7 +18,6 @@ std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
     return os;
 }
 
-// TODO: we could treat optional as an iterator (e.g. with 1 element if some, else 0), and support map over it
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const std::optional<T> &optional)
 {

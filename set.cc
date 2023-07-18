@@ -5,6 +5,7 @@
 #include <functional>
 #include "itertools.h"
 #include "functools.h"
+#include "testlib.h"
 
 template <typename T>
 class Set
@@ -91,15 +92,8 @@ void test_set_items()
 
 void test_set_outstream()
 {
-    Set<int> set{};
-    std::stringstream stream{};
-    stream << set;
-    assert(std::string(std::istreambuf_iterator<char>(stream), {}) == "{ }");
-
-    set.add(1);
-    set.add(1004);
-    stream << set;
-    assert(std::string(std::istreambuf_iterator<char>(stream), {}) == "{ 1 1004 }");
+    testlib::assert_outstream(Set<int>{}, "{ }");
+    testlib::assert_outstream(Set<int>{1, 1004}, "{ 1 1004 }");
 }
 
 void test_item_constructor()
