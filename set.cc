@@ -1,7 +1,5 @@
 #include <vector>
-#include <optional>
 #include <iostream>
-#include <sstream>
 #include <functional>
 #include "itertools.h"
 #include "functools.h"

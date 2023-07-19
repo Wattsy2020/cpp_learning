@@ -1,3 +1,4 @@
+#include <string>
 #include "functools.h"
 #include "itertools.h"
 #include "string_lib.h"

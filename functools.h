@@ -2,8 +2,6 @@
 #define FUNCTOOLS
 
 #include <vector>
-#include <iostream>
-#include <string>
 #include <numeric>
 #include <functional>
 

@@ -1,7 +1,6 @@
 #include <vector>
 #include <iostream>
 #include <tuple>
-#include <sstream>
 #include <exception>
 #include "itertools.h"
 #include "testlib.h"
