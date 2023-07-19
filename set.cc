@@ -33,7 +33,7 @@ public:
             add(item);
     };
 
-    // note mutable T shouldn't be hashed, so we can add a reference here
+    // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
     void add(const T &item)
     {
         if (contains(item))
