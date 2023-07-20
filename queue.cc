@@ -80,19 +80,9 @@ private:
     // Double the capacity for the queue, while also removing items that have exited the queue
     void increase_capacity()
     {
-        // Implement through
         // Create a new Queue with double the capacity using the copy constructor
-        // copy constructor has the logic to copy and remove lazily deleted values
-
-        // can use swap idiom to do this:
-        // then delete[] values_ptr, set to nullptr
-        // then set *this = the copied Queue
-        Queue larger_queue(*this, array_end_offset * 2); // double capacity, while also removing old items
-        delete[] values_ptr;
-        values_ptr = nullptr;
-        *this = larger_queue;
-        larger_queue.values_ptr = nullptr; // avoid deleting this.values_ptr
-        // assert(this->values_ptr == larger_queue.values_ptr);
+        // the copy assignment then ensures that the old values in *this are deallocated by the destructor
+        Queue(*this, array_end_offset * 2).swap(*this);
     }
 };
 
