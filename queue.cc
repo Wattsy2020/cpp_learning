@@ -1,7 +1,9 @@
 #include <assert.h>
+#include <exception>
 #include <iostream>
 #include "itertools.h"
 
+// Deliberately implemented without smart pointers to practice RAII with pointers
 template <typename T>
 class Queue
 {
@@ -18,7 +20,16 @@ public:
             push_back(item);
     }
 
-    // TODO: add move and copy constructors
+    // Copy another queue, ignoring all lazily removed items
+    Queue(const Queue &other, const int capacity = 128) : Queue(capacity)
+    {
+        if (capacity < other.capacity())
+            throw std::length_error("Cannot copy a queue to another queue with smaller capacity");
+
+        // copying from queue_start_offset onwards will leave behind the items that have already been removed from the queue
+        std::copy(other.values_ptr + other.queue_start_offset, other.values_ptr + other.queue_end_offset, values_ptr);
+        queue_end_offset = other.size();
+    }
 
     ~Queue()
     {
@@ -114,12 +125,35 @@ void test_queue_initializer_list()
     assert(queue.size() == 5);
 }
 
-// test copy constructor, ensure copies don't affect each other
+void test_queue_copy_constructor()
+{
+    // ensure modifying copies don't affect each other
+    Queue<int> queue1{1, 2, 3};
+    Queue<int> queue2(queue1);
+    assert(queue1.size() == 3);
+    assert(queue1.pop_head() == 1);
+    assert(queue1.size() == 2);
+    assert(queue2.size() == 3);
+    assert(queue2.pop_head() == 1);
+    assert(queue2.size() == 2);
 
-// same test for copy assignment
+    // ensure copying removes lazily deleted items
+    Queue<int> queue3(2);
+    queue3.push_back(1);
+    queue3.push_back(2);
+    assert(queue3.pop_head() == 1);
+    assert(queue3.size() == 1);
+    Queue<int> queue4(queue3, 2);
+    assert(queue4.size() == 1);
+    queue4.push_back(3);
+    assert(queue4.size() == 2);
+    assert(queue4.capacity() == 2);
+    assert(queue4.pop_head() == 2);
+}
 
 int main()
 {
     test_queue();
     test_queue_initializer_list();
+    test_queue_copy_constructor();
 }
