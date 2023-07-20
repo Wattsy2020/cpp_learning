@@ -60,6 +60,13 @@ public:
 
     std::vector<T> items() const { return all_items; }
 
+    // TODO: make these iterators, not pointers
+    // note: must return constant pointers, to prevent returned items from being mutated,
+    // and causing inconsistency between set_values and all_items
+    const T *begin() const { return &all_items[0]; }
+
+    const T *end() const { return &all_items[size(all_items)]; }
+
 private:
     std::hash<T> hasher;
     std::vector<std::vector<T>> set_values; // vector where vector[hash] is a vector containing all elemetns with that hash
@@ -174,6 +181,21 @@ void test_set_items()
     assert(set.items() == (std::vector<int>{1, 1004}));
 }
 
+void test_set_iteration()
+{
+    Set<int> set{1};
+    for (int item : set)
+        assert(item == 1);
+
+    Set<int> to_sum{1, 2, 3, 4};
+    assert(std::accumulate(to_sum.begin(), to_sum.end(), 0) == 10);
+
+    // below works when returning T*, fails for const T*
+    // trying to define T *begin() const fails, as the compiler recognizes returning a non const T* means the function cannot be const
+    //*set.begin() = 5;
+    // assert(set.items() == (std::vector<int>{5}));
+}
+
 void test_set_outstream()
 {
     testlib::assert_outstream(Set<int>{}, "{ }");
@@ -259,6 +281,7 @@ int main()
     test_set_contains();
     test_set_items();
     test_set_outstream();
+    test_set_iteration();
     test_item_constructor();
     test_vector_constructor();
     test_hash_conflict();
