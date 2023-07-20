@@ -94,6 +94,23 @@ namespace functools
         const std::function<int(T)> pred_to_int{compose(pred, std::function<int(bool)>{bool_to_int})};
         return sum(map(pred_to_int, vec));
     }
+
+    // TODO: make this take any number of type arguments
+    template <typename ARG1, typename ARG2, typename RET>
+    class Partial
+    {
+    public:
+        Partial(const std::function<RET(const ARG1, const ARG2)> function, const ARG1 arg1) : function{function}, arg1{arg1} {}
+        RET operator()(const ARG2 arg2) const { return function(arg1, arg2); }
+
+    private:
+        const std::function<RET(ARG1, ARG2)> function;
+        const ARG1 arg1;
+    };
+
+    // TODO: could we directly define another constructor for std::function, so that it can implicitly convert Partial to std::function?
+    template <typename ARG1, typename ARG2, typename RET>
+    std::function<RET(ARG2)> to_func(const Partial<ARG1, ARG2, RET> &partial_func) { return std::function<RET(ARG2)>{partial_func}; }
 }
 
 #endif

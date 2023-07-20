@@ -58,6 +58,15 @@ void test_sum()
     assert(result2 - 2.1 < .00001);
 }
 
+bool greater_than(const int compare_to, const int num) { return num > compare_to; }
+
+void test_partial()
+{
+    std::function<bool(int, int)> greater_than_func{greater_than};
+    assert(functools::Partial(greater_than_func, 3)(5));
+    assert(!functools::Partial(greater_than_func, 10)(7));
+}
+
 int main()
 {
     test_any_all();
@@ -66,15 +75,17 @@ int main()
     test_compose();
     test_count();
     test_sum();
+    test_partial();
 
     std::vector<bool> bools{true, true, false, false};
     std::cout << to_str(functools::any(bools)) << " " << to_str(functools::all(bools)) << " for " << bools << std::endl;
 
     std::vector<int> nums = itertools::range(1, 20, 2);
-    std::function<bool(int)> greater_than_3{[](int a)
-                                            { return a > 3; }};
+    std::function<bool(int, int)> greater_than_func{greater_than};
+    std::function<bool(int)> greater_than_3{functools::Partial(greater_than_func, 3)};
     std::cout << nums << " " << functools::map(functools::compose(greater_than_3, std::function<std::string(bool)>(to_str)), nums) << std::endl;
     std::cout << functools::count(greater_than_3, nums) << std::endl;
+    std::cout << functools::count(to_func(functools::Partial(greater_than_func, 10)), nums) << std::endl;
 
     std::cout << functools::sum(std::vector<int>{0, 1, 2, 3, 4}) << std::endl;
     std::cout << functools::sum(std::vector<double>{-1.333, 1.333, 2.1}) << std::endl;
