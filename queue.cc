@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <exception>
 #include <iostream>
+#include <optional>
 #include "itertools.h"
 
 // Deliberately implemented without smart pointers to practice RAII with pointers
@@ -21,14 +22,22 @@ public:
     }
 
     // Copy another queue, ignoring all lazily removed items
-    Queue(const Queue &other, const int capacity = 128) : Queue(capacity)
+    // copies the capacity of the other queue by default, can also increase capacity if specified
+    Queue(const Queue &other, const std::optional<int> capacity = std::nullopt)
+        : Queue(capacity.value_or(other.array_end_offset))
     {
-        if (capacity < other.capacity())
+        if (capacity.value_or(other.array_end_offset) < other.capacity())
             throw std::length_error("Cannot copy a queue to another queue with smaller capacity");
 
         // copying from queue_start_offset onwards will leave behind the items that have already been removed from the queue
         std::copy(other.values_ptr + other.queue_start_offset, other.values_ptr + other.queue_end_offset, values_ptr);
         queue_end_offset = other.size();
+    }
+
+    Queue &operator=(Queue other)
+    {
+        other.swap(*this);
+        return *this;
     }
 
     ~Queue()
@@ -58,19 +67,32 @@ private:
     int queue_end_offset;   // values_ptr + queue_end_offset == 1 past the last element in the queue
     int array_end_offset;   // values_ptr + array_end_offset == 1 past the last element in the array
 
+    // move and swap pattern: create a temporary other, swap variables in this with other
+    // then other goes out of scope, calling the destructor for the old variables in this
+    void swap(Queue &other) noexcept
+    {
+        std::swap(this->values_ptr, other.values_ptr);
+        std::swap(this->queue_start_offset, other.queue_start_offset);
+        std::swap(this->queue_end_offset, other.queue_end_offset);
+        std::swap(this->array_end_offset, other.array_end_offset);
+    }
+
     // Double the capacity for the queue, while also removing items that have exited the queue
     void increase_capacity()
     {
-        array_end_offset *= 2;
-        T *larger_values_ptr = new T[array_end_offset];
+        // Implement through
+        // Create a new Queue with double the capacity using the copy constructor
+        // copy constructor has the logic to copy and remove lazily deleted values
 
-        // copying from queue_start_offset onwards will leave behind the items that have already been removed from the queue
-        std::copy(values_ptr + queue_start_offset, values_ptr + queue_end_offset, larger_values_ptr);
-        queue_end_offset -= queue_start_offset; // since we deleted the items before queue_start_offset, shift the offsets back
-        queue_start_offset = 0;
-
+        // can use swap idiom to do this:
+        // then delete[] values_ptr, set to nullptr
+        // then set *this = the copied Queue
+        Queue larger_queue(*this, array_end_offset * 2); // double capacity, while also removing old items
         delete[] values_ptr;
-        values_ptr = larger_values_ptr;
+        values_ptr = nullptr;
+        *this = larger_queue;
+        larger_queue.values_ptr = nullptr; // avoid deleting this.values_ptr
+        // assert(this->values_ptr == larger_queue.values_ptr);
     }
 };
 
@@ -151,9 +173,23 @@ void test_queue_copy_constructor()
     assert(queue4.pop_head() == 2);
 }
 
+void test_queue_copy_assignment()
+{
+    Queue<int> queue1{1, 2, 3};
+    Queue<int> queue2{};
+    queue2 = queue1;
+    assert(queue1.size() == 3);
+    assert(queue1.pop_head() == 1);
+    assert(queue1.size() == 2);
+    assert(queue2.size() == 3);
+    assert(queue2.pop_head() == 1);
+    assert(queue2.size() == 2);
+}
+
 int main()
 {
     test_queue();
     test_queue_initializer_list();
     test_queue_copy_constructor();
+    test_queue_copy_assignment();
 }
