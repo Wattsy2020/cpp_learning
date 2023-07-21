@@ -23,14 +23,12 @@ public:
     // maybe we can have a function that adds an iterator to the set?
     constexpr Set<T>(const std::vector<T> &items, size_t const &size = 100000) : Set<T>(size)
     {
-        for (const T &item : items)
-            add(item);
+        add(items.cbegin(), items.cend());
     };
 
     constexpr Set<T>(const std::initializer_list<T> &items, size_t const &size = 100000) : Set<T>(size)
     {
-        for (const T &item : items)
-            add(item);
+        add(items.begin(), items.end());
     };
 
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
@@ -40,6 +38,13 @@ public:
             return;
         set_values[hash(item)].push_back(item);
         all_items.push_back(item);
+    }
+
+    template <typename InputIt>
+    void add(InputIt first, InputIt last)
+    {
+        for (; first != last; ++first)
+            add(*first);
     }
 
     // note this is O(n), if removing multiple items then use set::difference instead, which is also O(n)
