@@ -34,9 +34,24 @@ public:
         queue_end_offset = other.size();
     }
 
-    Queue &operator=(Queue other)
+    Queue &operator=(const Queue &other)
+    {
+        // copy other into a temporary, then swap, so that the temporary variable's destructor deallocates this->values_ptr
+        Queue(other).swap(*this);
+        return *this;
+    }
+
+    Queue(Queue &&other)
     {
         other.swap(*this);
+        other.values_ptr = nullptr; // so destructor is called on a nullptr, instead of un-initialised pointer
+    }
+
+    Queue &operator=(Queue &&other)
+    {
+        // swap *this into a temporary variable, so that this.values_ptr is deallocated immediately after the move assignment finishes
+        Queue(std::move(other)).swap(*this);
+        other.values_ptr = nullptr;
         return *this;
     }
 
@@ -176,10 +191,24 @@ void test_queue_copy_assignment()
     assert(queue2.size() == 2);
 }
 
+void test_queue_move_assignment()
+{
+    Queue<int> queue1{1, 2, 3};
+    Queue<int> queue2{};
+    queue2 = std::move(queue1); // now queue1 is invalid
+    assert(queue2.size() == 3);
+    assert(queue2.pop_head() == 1);
+    // assert(queue1.values_ptr == nullptr); // cannot even run this, get a compiler error
+    queue2.push_back(4);
+    for (const int queue_val : itertools::range(2, 5))
+        assert(queue2.pop_head() == queue_val);
+}
+
 int main()
 {
     test_queue();
     test_queue_initializer_list();
     test_queue_copy_constructor();
     test_queue_copy_assignment();
+    test_queue_move_assignment();
 }
