@@ -35,7 +35,7 @@ void test_compose()
 {
     std::function<bool(int)> greater_than_3{[](int a)
                                             { return a > 3; }};
-    std::function<std::string(int)> composed{functools::compose(greater_than_3, std::function<std::string(bool)>(to_str))};
+    std::function<std::string(int)> composed{functools::compose(greater_than_3, std::function<std::string(bool)>(strlib::to_str))};
     std::string expected_result{"true"};
     std::string result{composed(5)};
     assert(result == expected_result);
@@ -78,18 +78,18 @@ int main()
     test_partial();
 
     std::vector<bool> bools{true, true, false, false};
-    std::cout << to_str(functools::any(bools)) << " " << to_str(functools::all(bools)) << " for " << bools << std::endl;
+    std::cout << strlib::to_str(functools::any(bools)) << " " << strlib::to_str(functools::all(bools)) << " for " << bools << std::endl;
 
     std::vector<int> nums = itertools::range(1, 20, 2);
     std::function<bool(int, int)> greater_than_func{greater_than};
     std::function<bool(int)> greater_than_3{functools::Partial(greater_than_func, 3)};
-    std::cout << nums << " " << functools::map(functools::compose(greater_than_3, std::function<std::string(bool)>(to_str)), nums) << std::endl;
+    std::cout << nums << " " << functools::map(functools::compose(greater_than_3, std::function<std::string(bool)>(strlib::to_str)), nums) << std::endl;
     std::cout << functools::count(greater_than_3, nums) << std::endl;
     std::cout << functools::count(to_func(functools::Partial(greater_than_func, 10)), nums) << std::endl;
 
     std::cout << functools::sum(std::vector<int>{0, 1, 2, 3, 4}) << std::endl;
     std::cout << functools::sum(std::vector<double>{-1.333, 1.333, 2.1}) << std::endl;
 
-    std::cout << to_str(functools::all(greater_than_3, nums)) << std::endl;
-    std::cout << to_str(functools::any(greater_than_3, nums)) << std::endl;
+    std::cout << strlib::to_str(functools::all(greater_than_3, nums)) << std::endl;
+    std::cout << strlib::to_str(functools::any(greater_than_3, nums)) << std::endl;
 }

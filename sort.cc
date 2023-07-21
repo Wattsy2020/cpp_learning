@@ -79,7 +79,7 @@ void test_quicksort()
 int main()
 {
     std::vector<int> vect{1, 2, 3, 4, 5};
-    std::cout << to_str(is_sorted(vect)) << std::endl;
+    std::cout << strlib::to_str(is_sorted(vect)) << std::endl;
 
     // check sorting
     std::vector<int> vect2{10, -5, 3, 4, 0};
