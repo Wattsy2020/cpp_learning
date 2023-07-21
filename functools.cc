@@ -1,7 +1,7 @@
 #include <string>
 #include "functools.h"
 #include "itertools.h"
-#include "string_lib.h"
+#include "strlib.h"
 
 void test_any_all()
 {
