@@ -11,9 +11,20 @@ int max(std::vector<int> vector)
     return maximum;
 }
 
+constexpr int sum(const int lower_bound, const int upper_bound)
+{
+    int result{0};
+    for (int i = lower_bound; i < upper_bound; ++i)
+        result += i;
+    return result;
+}
+
 int main()
 {
     std::vector<int> vect{10, 20, 30, 4};
     int value = max(vect);
     std::cout << value << std::endl;
+    constexpr int gaussian_sum{sum(1, 101)};
+    static_assert(gaussian_sum == 5050);
+    std::cout << gaussian_sum << std::endl;
 }
