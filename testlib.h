@@ -3,7 +3,9 @@
 
 #include <functional>
 #include <exception>
+#include <optional>
 #include <sstream>
+#include <string>
 
 namespace testutils
 {
@@ -19,14 +21,16 @@ namespace testutils
 namespace testlib
 {
     template <typename EXCEPTION>
-    void raises(const std::function<void()> &callback)
+    void raises(const std::function<void()> &callback, std::optional<std::string> expected_message = std::nullopt)
     {
         try
         {
             callback();
         }
-        catch (EXCEPTION)
+        catch (EXCEPTION &exc)
         {
+            if (expected_message && expected_message.value() != exc.what())
+                throw std::logic_error("The callback raised exception with an invalid message");
             return;
         }
         throw std::logic_error("The callback failed to raise the expected exception");
