@@ -9,6 +9,7 @@
 #include <exception>
 #include <optional>
 #include "math.h"
+#include "strlib.h"
 
 template <typename T1, typename T2>
 std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
@@ -55,7 +56,7 @@ namespace itertools
     void validate_index(const int &index, const int &length)
     {
         if (index < 0 || index >= length)
-            throw std::range_error("Invalid index, must be between 0 and length");
+            throw std::range_error(strlib::format("Invalid index {}, must be between 0 and length", index));
     }
 
     // Slice a vector from [start, end)  (i.e. not including the end index)
@@ -135,6 +136,16 @@ namespace itertools
         if (vec.empty())
             throw std::length_error("Vector must have at least one element");
         return std::make_tuple(itertools::slice(vec, 0, -1), vec[vec.size() - 1]);
+    }
+
+    // Return tuple (first element of vector, last part of vector)
+    // Vector must contain at least one element
+    template <typename T>
+    constexpr std::tuple<std::vector<T>, T> head_tail(const std::vector<T> &vec)
+    {
+        if (vec.empty())
+            throw std::length_error("Vector must have at least one element");
+        return std::make_tuple(vec[0], itertools::slice(vec, 1, -1));
     }
 
     // Join elements of a vector together, using the separator
