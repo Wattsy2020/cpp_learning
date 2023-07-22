@@ -166,6 +166,12 @@ void test_linked_list_remove()
     list.remove(1);
     std::vector<int> result2{list.items()};
     assert(result2 == (std::vector<int>{2, 4}));
+
+    // ensure head is updated for one item list
+    LinkedList<int> one_item{1};
+    one_item.remove(0);
+    std::vector<int> result3{one_item.items()};
+    assert(result3 == (std::vector<int>{}));
 }
 
 int main()
