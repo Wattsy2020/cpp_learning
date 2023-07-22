@@ -1,6 +1,8 @@
 #include <memory>
 #include <exception>
 #include <vector>
+#include "itertools.h"
+#include "testlib.h"
 
 namespace __node
 {
@@ -45,18 +47,23 @@ public:
         ++length;
     }
 
+    void insert(int index, const T item)
+    {
+        itertools::validate_index(index, length);
+        __node::Node<T> &prev_node = (index == 0) ? head : get_node(index - 1);
+        __node::Node<T> new_node{__node::Node<T>(item)};
+        new_node.next_node = prev_node.next_node;
+        prev_node.next_node = std::make_shared<__node::Node<T>>(new_node);
+        ++length;
+    }
+
     T back() const { return last->item; }
 
     // get item, note this is O(n) and inefficient
-    const T &operator[](int index) const
+    T &operator[](const int index)
     {
-        if (index < 0 || index >= length)
-            throw std::range_error("Invalid index, must be between 0 and length");
-
-        std::shared_ptr<__node::Node<T>> current = head.next_node;
-        for (int i = 0; i < index; ++i)
-            current = current->next_node;
-        return current->item;
+        itertools::validate_index(index, length);
+        return get_node(index).item;
     }
 
     // get all items, for efficient access
@@ -76,6 +83,15 @@ private:
     __node::Node<T> head;
     std::shared_ptr<__node::Node<T>> last;
     int length;
+
+    __node::Node<T> &get_node(const int index)
+    {
+        assert(index >= 0 && index < length);
+        std::shared_ptr<__node::Node<T>> current = head.next_node;
+        for (int i = 0; i < index; ++i)
+            current = current->next_node;
+        return *current;
+    }
 };
 
 void test_node()
@@ -107,6 +123,20 @@ void test_linked_list_access()
     assert(list[2] == 3);
     assert(list[3] == 4);
     assert(list.items() == (std::vector<int>{1, 2, 3, 4}));
+    testlib::raises<std::range_error>([&list]()
+                                      { list[-1]; });
+}
+
+void test_linked_list_insert()
+{
+    LinkedList<int> list{1, 2, 3, 4};
+    list.insert(0, 10);
+    std::vector<int> result{list.items()};
+    assert(result == (std::vector<int>{10, 1, 2, 3, 4}));
+
+    list.insert(2, 5);
+    std::vector<int> result2{list.items()};
+    assert(result2 == (std::vector<int>{10, 1, 5, 2, 3, 4}));
 }
 
 int main()
@@ -114,4 +144,5 @@ int main()
     test_node();
     test_linked_list_add();
     test_linked_list_access();
+    test_linked_list_insert();
 }

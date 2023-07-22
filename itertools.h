@@ -52,6 +52,12 @@ namespace __private_utils
 
 namespace itertools
 {
+    void validate_index(const int &index, const int &length)
+    {
+        if (index < 0 || index >= length)
+            throw std::range_error("Invalid index, must be between 0 and length");
+    }
+
     // Slice a vector from [start, end)  (i.e. not including the end index)
     // Handles negative numbers and slices where end > length
     template <typename T>
