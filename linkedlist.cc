@@ -21,9 +21,10 @@ template <typename T>
 class LinkedList
 {
 public:
-    LinkedList() : head{__node::Node<T>()}, length{0}
+    LinkedList() : length{0}
     {
-        last = std::make_shared<__node::Node<T>>(head);
+        head = std::make_shared<__node::Node<T>>(__node::Node<T>{});
+        last = head;
     }
 
     LinkedList(const std::initializer_list<T> &items) : LinkedList()
@@ -40,8 +41,8 @@ public:
         // note: need to update head if this is the first item
         // then update last to point to the new item
         auto new_node = std::make_shared<__node::Node<T>>(item);
-        if (!head.next_node)
-            head.next_node = new_node;
+        if (!head->next_node)
+            head->next_node = new_node;
         last->next_node = new_node;
         last = new_node;
         ++length;
@@ -50,7 +51,7 @@ public:
     void insert(int index, const T item)
     {
         itertools::validate_index(index, length);
-        __node::Node<T> &prev_node = (index == 0) ? head : get_node(index - 1);
+        __node::Node<T> &prev_node = get_node(index - 1);
         __node::Node<T> new_node{__node::Node<T>(item)};
         new_node.next_node = prev_node.next_node;
         prev_node.next_node = std::make_shared<__node::Node<T>>(new_node);
@@ -70,7 +71,7 @@ public:
     std::vector<T> items() const
     {
         std::vector<T> result{};
-        std::shared_ptr<__node::Node<T>> current = head.next_node;
+        std::shared_ptr<__node::Node<T>> current = head->next_node;
         for (int i = 0; i < length; ++i)
         {
             result.push_back(current->item);
@@ -80,15 +81,15 @@ public:
     }
 
 private:
-    __node::Node<T> head;
-    std::shared_ptr<__node::Node<T>> last;
+    std::shared_ptr<__node::Node<T>> head; // points to 1 node before the first item
+    std::shared_ptr<__node::Node<T>> last; // points to the last item
     int length;
 
     __node::Node<T> &get_node(const int index)
     {
-        assert(index >= 0 && index < length);
-        std::shared_ptr<__node::Node<T>> current = head.next_node;
-        for (int i = 0; i < index; ++i)
+        assert(index >= -1 && index < length);
+        std::shared_ptr<__node::Node<T>> current = head;
+        for (int i = -1; i < index; ++i)
             current = current->next_node;
         return *current;
     }
