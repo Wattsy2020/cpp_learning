@@ -1,5 +1,6 @@
 #include <memory>
 #include <exception>
+#include <vector>
 
 namespace __node
 {
@@ -31,7 +32,7 @@ public:
 
     int size() const { return length; }
 
-    // add item to the linked list
+    // add item to the linked list, O(1)
     void add(const T item)
     {
         // note: need to update head if this is the first item
@@ -46,6 +47,7 @@ public:
 
     T back() const { return last->item; }
 
+    // get item, note this is O(n) and inefficient
     const T &operator[](int index) const
     {
         if (index < 0 || index >= length)
@@ -55,6 +57,19 @@ public:
         for (int i = 0; i < index; ++i)
             current = current->next_node;
         return current->item;
+    }
+
+    // get all items, for efficient access
+    std::vector<T> items() const
+    {
+        std::vector<T> result{};
+        std::shared_ptr<__node::Node<T>> current = head.next_node;
+        for (int i = 0; i < length; ++i)
+        {
+            result.push_back(current->item);
+            current = current->next_node;
+        }
+        return result;
     }
 
 private:
@@ -91,6 +106,7 @@ void test_linked_list_access()
     assert(list[1] == 2);
     assert(list[2] == 3);
     assert(list[3] == 4);
+    assert(list.items() == (std::vector<int>{1, 2, 3, 4}));
 }
 
 int main()
