@@ -1,7 +1,11 @@
+#include <assert.h>
 #include <string>
 #include "functools.h"
 #include "itertools.h"
 #include "strlib.h"
+
+// unfortunately have to static cast overloaded functions in order to construct a std::function
+std::function<std::string(bool)> bool_to_str{static_cast<std::string (*)(bool)>(&strlib::to_str)};
 
 void test_any_all()
 {
@@ -35,7 +39,7 @@ void test_compose()
 {
     std::function<bool(int)> greater_than_3{[](int a)
                                             { return a > 3; }};
-    std::function<std::string(int)> composed{functools::compose(greater_than_3, std::function<std::string(bool)>(strlib::to_str))};
+    std::function<std::string(int)> composed{functools::compose(greater_than_3, bool_to_str)};
     std::string expected_result{"true"};
     std::string result{composed(5)};
     assert(result == expected_result);
@@ -83,7 +87,7 @@ int main()
     std::vector<int> nums = itertools::range(1, 20, 2);
     std::function<bool(int, int)> greater_than_func{greater_than};
     std::function<bool(int)> greater_than_3{functools::Partial(greater_than_func, 3)};
-    std::cout << nums << " " << functools::map(functools::compose(greater_than_3, std::function<std::string(bool)>(strlib::to_str)), nums) << std::endl;
+    std::cout << nums << " " << functools::map(functools::compose(greater_than_3, bool_to_str), nums) << std::endl;
     std::cout << functools::count(greater_than_3, nums) << std::endl;
     std::cout << functools::count(to_func(functools::Partial(greater_than_func, 10)), nums) << std::endl;
 

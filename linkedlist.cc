@@ -3,6 +3,7 @@
 #include <vector>
 #include "itertools.h"
 #include "testlib.h"
+#include <assert.h>
 
 namespace __node
 {
