@@ -65,8 +65,7 @@ public:
     {
         if (queue_end_offset == array_end_offset)
             increase_capacity();
-        values_ptr[queue_end_offset] = item;
-        ++queue_end_offset;
+        values_ptr[queue_end_offset++] = item;
     }
 
     // return (and lazily remove) the head of the queue
@@ -75,6 +74,8 @@ public:
     int capacity() const { return array_end_offset; }
 
     int size() const { return queue_end_offset - queue_start_offset; }
+
+    operator bool() const { return size() > 0; }
 
 private:
     T *values_ptr;
@@ -204,6 +205,12 @@ void test_queue_move_assignment()
         assert(queue2.pop_head() == queue_val);
 }
 
+void test_queue_bool()
+{
+    assert(!Queue<int>{});
+    assert(Queue<int>{1});
+}
+
 int main()
 {
     test_queue();
@@ -211,4 +218,5 @@ int main()
     test_queue_copy_constructor();
     test_queue_copy_assignment();
     test_queue_move_assignment();
+    test_queue_bool();
 }

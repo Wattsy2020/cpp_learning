@@ -38,6 +38,8 @@ public:
         return os;
     }
 
+    operator bool() const { return !values.empty(); }
+
 private:
     std::vector<T> values;
 };
@@ -65,8 +67,15 @@ void test_stack_ostream()
     testlib::assert_outstream(stack, "[ 1 2 3 4 5 ]");
 }
 
+void test_stack_bool()
+{
+    assert(!Stack<int>{});
+    assert(Stack<int>{1});
+}
+
 int main()
 {
     test_stack();
     test_stack_ostream();
+    test_stack_bool();
 }

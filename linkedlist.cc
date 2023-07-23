@@ -34,8 +34,6 @@ public:
             add(item);
     }
 
-    int size() const { return length; }
-
     // add item to the linked list, O(1)
     void add(const T item)
     {
@@ -93,6 +91,10 @@ public:
         }
         return result;
     }
+
+    int size() const { return length; }
+
+    operator bool() { return size() > 0; }
 
 private:
     std::shared_ptr<__node::Node<T>> head; // points to 1 node before the first item
@@ -175,6 +177,12 @@ void test_linked_list_remove()
     assert(result3 == (std::vector<int>{}));
 }
 
+void test_linked_list_bool()
+{
+    assert(!LinkedList<int>{});
+    assert(LinkedList<int>{1});
+}
+
 int main()
 {
     test_node();
@@ -182,4 +190,5 @@ int main()
     test_linked_list_access();
     test_linked_list_insert();
     test_linked_list_remove();
+    test_linked_list_bool();
 }

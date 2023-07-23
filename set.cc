@@ -83,6 +83,8 @@ public:
 
     const ValueType *end() const { return &all_items[size()]; }
 
+    operator bool() const { return !all_items.empty(); }
+
 private:
     const std::hash<HashType> hasher;
     const std::function<HashType(ValueType)> key_func;
@@ -160,7 +162,9 @@ namespace set
 void test_set_add()
 {
     Set<int> set{};
+    assert(!set);
     set.add(1);
+    assert(set);
     assert(set.contains(1));
 
     // test duplicates aren't added twice
