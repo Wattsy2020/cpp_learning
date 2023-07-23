@@ -82,8 +82,7 @@ namespace functools
     template <typename T>
     constexpr T sum(const std::vector<T> &vec)
     {
-        return reduce(std::function<T(T, T)>{plus<T>}, vec, T{0});
-        // return std::accumulate(vec.begin(), vec.end(), T{0}, std::plus<T>());
+        return std::accumulate(vec.begin(), vec.end(), T{0}, std::plus<T>());
     }
 
     constexpr int bool_to_int(const bool &b) { return int(b); }
@@ -100,8 +99,8 @@ namespace functools
     class Partial
     {
     public:
-        Partial(const std::function<RET(const ARG1, const ARG2)> function, const ARG1 arg1) : function{function}, arg1{arg1} {}
-        RET operator()(const ARG2 arg2) const { return function(arg1, arg2); }
+        constexpr Partial(const std::function<RET(const ARG1, const ARG2)> function, const ARG1 arg1) : function{function}, arg1{arg1} {}
+        constexpr RET operator()(const ARG2 arg2) const { return function(arg1, arg2); }
 
     private:
         const std::function<RET(ARG1, ARG2)> function;

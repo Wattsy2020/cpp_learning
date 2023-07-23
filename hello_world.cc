@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "itertools.h"
+#include "functools.h"
 
 int max(std::vector<int> vector)
 {
@@ -14,10 +15,7 @@ int max(std::vector<int> vector)
 
 consteval int sum(const int lower_bound, const int upper_bound)
 {
-    int result{0};
-    for (const int num : itertools::range(lower_bound, upper_bound))
-        result += num;
-    return result;
+    return functools::sum(itertools::range(lower_bound, upper_bound));
 }
 
 int main()
