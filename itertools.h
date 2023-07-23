@@ -53,7 +53,7 @@ namespace __private_utils
 
 namespace itertools
 {
-    void validate_index(const int &index, const int &length)
+    constexpr void validate_index(const int &index, const int &length)
     {
         if (index < 0 || index >= length)
             throw std::range_error(strlib::format("Invalid index {}, must be between 0 and length", index));
@@ -79,7 +79,7 @@ namespace itertools
     }
 
     // A vector with items from [start, end) with the given step size
-    std::vector<int> range(const int &start, const int &end, const int &step = 1)
+    constexpr std::vector<int> range(const int &start, const int &end, const int &step = 1)
     {
         if (step == 0)
         {
@@ -96,7 +96,7 @@ namespace itertools
         }
 
         std::vector<int> result{};
-        int sign{signum(end - start)};
+        const int sign{signum(end - start)};
         for (int i{start}; sign * i < sign * end; i = i + step)
             result.push_back(i);
         return result;
@@ -105,7 +105,7 @@ namespace itertools
     // Merge two vectors together, returning a vector where vec[i] = tuple{vec1[i], vec2[i]}
     // Stop at the end of the shortest vector
     template <typename T1, typename T2>
-    std::vector<std::tuple<T1, T2>> zip(const std::vector<T1> &vec1, const std::vector<T2> &vec2)
+    constexpr std::vector<std::tuple<T1, T2>> zip(const std::vector<T1> &vec1, const std::vector<T2> &vec2)
     {
         const size_t min_length{std::min(vec1.size(), vec2.size())};
         std::vector<std::tuple<T1, T2>> result{};
@@ -116,14 +116,14 @@ namespace itertools
 
     // Return tuple of i and the vector item at i
     template <typename T>
-    std::vector<std::tuple<int, T>> enumerate(const std::vector<T> &vec)
+    constexpr std::vector<std::tuple<int, T>> enumerate(const std::vector<T> &vec)
     {
         return itertools::zip(itertools::range(0, vec.size()), vec);
     }
 
     // Return vector of tuples (item, next item)
     template <typename T>
-    std::vector<std::tuple<T, T>> pairwise(const std::vector<T> &vec)
+    constexpr std::vector<std::tuple<T, T>> pairwise(const std::vector<T> &vec)
     {
         return itertools::zip(vec, itertools::slice(vec, 1, vec.size()));
     }
