@@ -64,6 +64,7 @@
         "algorithm": "cpp",
         "numeric": "cpp",
         "charconv": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "span": "cpp"
     }
 }

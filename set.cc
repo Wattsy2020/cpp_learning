@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <functional>
+#include <ranges>
 #include "itertools.h"
 #include "functools.h"
 #include "testlib.h"
@@ -18,20 +19,22 @@ public:
           set_values{std::vector<std::vector<ValueType>>(size)},
           all_items{std::vector<ValueType>{}} {};
 
+    template <std::ranges::input_range Iter>
+        requires std::same_as<std::ranges::range_value_t<Iter>, ValueType>
     constexpr Set(
-        const std::vector<ValueType> &items,
+        const Iter &items,
         const std::function<HashType(ValueType)> key_func = std::identity(),
         size_t const &size = 100000) : Set(key_func, size)
     {
-        add(items.cbegin(), items.cend());
-    };
+        add(items);
+    }
 
     constexpr Set(
         const std::initializer_list<ValueType> &items,
         const std::function<HashType(ValueType)> key_func = std::identity(),
         size_t const &size = 100000) : Set(key_func, size)
     {
-        add(items.begin(), items.end());
+        add(items);
     };
 
     int size() const { return all_items.size(); }
@@ -45,9 +48,12 @@ public:
         all_items.push_back(item);
     }
 
-    template <typename InputIt>
-    void add(InputIt first, InputIt last)
+    template <std::ranges::input_range Iter>
+        requires std::same_as<std::ranges::range_value_t<Iter>, ValueType>
+    void add(const Iter &items)
     {
+        auto first = items.begin();
+        auto last = items.end();
         for (; first != last; ++first)
             add(*first);
     }
