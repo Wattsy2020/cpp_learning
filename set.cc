@@ -6,34 +6,38 @@
 #include "functools.h"
 #include "testlib.h"
 
-template <typename T>
+template <typename HashType, typename ValueType = HashType>
 class Set
 {
 public:
-    constexpr Set<T>(const size_t &size = 100000)
-        : hasher{std::hash<T>()},
-          set_values{std::vector<std::vector<T>>(size)},
-          all_items{std::vector<T>{}} {};
+    constexpr Set(
+        const std::function<HashType(ValueType)> key_func = std::identity(),
+        const size_t &size = 100000)
+        : hasher{std::hash<HashType>()},
+          key_func{key_func},
+          set_values{std::vector<std::vector<ValueType>>(size)},
+          all_items{std::vector<ValueType>{}} {};
 
-    constexpr Set<T>(const T &init_item, const size_t &size = 100000) : Set<T>(size)
-    {
-        add(init_item);
-    };
-
-    // TODO: figure out if we can combine the std::vector<T> and std::initializer_list<T> constructors
-    // maybe we can have a function that adds an iterator to the set?
-    constexpr Set<T>(const std::vector<T> &items, size_t const &size = 100000) : Set<T>(size)
+    constexpr Set(
+        const std::vector<ValueType> &items,
+        const std::function<HashType(ValueType)> key_func = std::identity(),
+        size_t const &size = 100000) : Set(key_func, size)
     {
         add(items.cbegin(), items.cend());
     };
 
-    constexpr Set<T>(const std::initializer_list<T> &items, size_t const &size = 100000) : Set<T>(size)
+    constexpr Set(
+        const std::initializer_list<ValueType> &items,
+        const std::function<HashType(ValueType)> key_func = std::identity(),
+        size_t const &size = 100000) : Set(key_func, size)
     {
         add(items.begin(), items.end());
     };
 
+    int size() const { return all_items.size(); }
+
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
-    void add(const T &item)
+    void add(const ValueType &item)
     {
         if (contains(item))
             return;
@@ -49,7 +53,7 @@ public:
     }
 
     // note this is O(n), if removing multiple items then use set::difference instead, which is also O(n)
-    void remove(const T &item)
+    void remove(const ValueType &item)
     {
         if (!contains(item))
             return;
@@ -57,29 +61,30 @@ public:
         std::erase(all_items, item);
     }
 
-    bool contains(const T &item) const
+    bool contains(const ValueType &item) const
     {
-        std::function<bool(T)> is_item{[item](T value)
-                                       { return value == item; }};
+        std::function<bool(ValueType)> is_item{[item](ValueType value)
+                                               { return value == item; }};
         return functools::any(is_item, set_values[hash(item)]);
     }
 
-    std::vector<T> items() const { return all_items; }
+    std::vector<ValueType> items() const { return all_items; }
 
     // TODO: make these iterators, not pointers
     // note: must return constant pointers, to prevent returned items from being mutated,
     // and causing inconsistency between set_values and all_items
-    const T *begin() const { return &all_items[0]; }
+    const ValueType *begin() const { return &all_items[0]; }
 
-    const T *end() const { return &all_items[size(all_items)]; }
+    const ValueType *end() const { return &all_items[size()]; }
 
 private:
-    std::hash<T> hasher;
-    std::vector<std::vector<T>> set_values; // vector where vector[hash] is a vector containing all elemetns with that hash
-    std::vector<T> all_items;
-    size_t hash(const T &item) const
+    const std::hash<HashType> hasher;
+    const std::function<HashType(ValueType)> key_func;
+    std::vector<std::vector<ValueType>> set_values; // vector where vector[hash] is a vector containing all elemetns with that hash
+    std::vector<ValueType> all_items;
+    size_t hash(const ValueType &item) const
     {
-        return hasher(item) % set_values.size();
+        return hasher(key_func(item)) % set_values.size();
     };
 };
 
@@ -208,12 +213,6 @@ void test_set_outstream()
     testlib::assert_outstream(Set<int>{1, 1004}, "{ 1 1004 }");
 }
 
-void test_item_constructor()
-{
-    Set<int> set(3);
-    assert(set.contains(3));
-}
-
 void test_vector_constructor()
 {
     std::vector<int> input_vec{1, 10004};
@@ -231,7 +230,7 @@ void test_hash_conflict()
 {
     // using a small set size would cause hash conflicts, test if the set class still stores all the items
     std::vector<int> long_vector{itertools::range(1, 1000)};
-    Set<int> set(long_vector, 10);
+    Set<int> set(long_vector, std::identity(), 10);
     for (const int &i : long_vector)
         assert(set.contains(i));
 }
@@ -280,6 +279,23 @@ void test_set_is_superset()
     assert(set::is_superset(set2, set1));
 }
 
+void test_set_key_func()
+{
+    // add unhashable type, but with a function that converts it to a hashable type
+    std::function<int(std::vector<int>)> key_func{[](const std::vector<int> &vec)
+                                                  { return vec.back(); }};
+    Set<int, std::vector<int>> set(key_func);
+    std::vector<int> vec1{1, 2, 5};
+    std::vector<int> vec2{1, 2};
+    set.add(vec1);
+    set.add(vec2);
+    assert(set.contains(vec1));
+    assert(set.contains(vec2));
+    assert(!set.contains(std::vector<int>{1}));
+    assert(set.size() == 2);
+    assert(set.items() == (std::vector{vec1, vec2}));
+}
+
 int main()
 {
     test_set_add();
@@ -288,7 +304,6 @@ int main()
     test_set_items();
     test_set_outstream();
     test_set_iteration();
-    test_item_constructor();
     test_vector_constructor();
     test_hash_conflict();
     test_set_union();
@@ -296,4 +311,5 @@ int main()
     test_set_difference();
     test_set_is_subset();
     test_set_is_superset();
+    test_set_key_func();
 }
