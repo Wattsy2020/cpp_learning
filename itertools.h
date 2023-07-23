@@ -8,6 +8,8 @@
 #include <tuple>
 #include <exception>
 #include <optional>
+#include <assert.h>
+#include <ranges>
 #include "math.h"
 #include "strlib.h"
 
@@ -43,11 +45,11 @@ namespace __private_utils
 {
     // Keep the idx within the bounds of 0, and the vector's length (for slicing only)
     // if idx is out of bounds, will bind it to the minimum
-    constexpr size_t _bound_index(const int &idx, const size_t &length)
+    constexpr int _bound_index(const long &idx, const long &length)
     {
-        if (idx < 0)
-            return size_t(std::max(int(length) + idx, 0)); // cast to avoid overflow when length + idx < 0
-        return std::min(size_t(idx), length);
+        const long result = (idx < 0) ? std::max(length + idx, long{0}) : std::min(idx, length);
+        assert(result >= 0 && result <= length);
+        return result;
     }
 }
 
@@ -59,15 +61,15 @@ namespace itertools
             throw std::range_error(strlib::format("Invalid index {}, must be between 0 and length", index));
     }
 
-    // Slice a vector from [start, end)  (i.e. not including the end index)
+    // Slice an iterator from [start, end)  (i.e. not including the end index)
     // Handles negative numbers and slices where end > length
-    template <typename T>
-    constexpr std::vector<T> slice(const std::vector<T> &vec, const int &start, const int &end)
+    template <std::ranges::input_range Iter>
+    constexpr Iter slice(const Iter &iter, const long &start, const long &end)
     {
-        size_t length{vec.size()};
-        size_t start_idx{__private_utils::_bound_index(start, length)};
-        size_t end_idx{__private_utils::_bound_index(end, length)};
-        return std::vector<T>(vec.begin() + start_idx, vec.begin() + end_idx);
+        const long length{std::distance(iter.begin(), iter.end())};
+        const long start_idx{__private_utils::_bound_index(start, length)};
+        const long end_idx{__private_utils::_bound_index(end, length)};
+        return Iter(iter.begin() + start_idx, iter.begin() + end_idx);
     }
 
     template <typename T>
@@ -102,15 +104,23 @@ namespace itertools
         return result;
     }
 
-    // Merge two vectors together, returning a vector where vec[i] = tuple{vec1[i], vec2[i]}
-    // Stop at the end of the shortest vector
-    template <typename T1, typename T2>
-    constexpr std::vector<std::tuple<T1, T2>> zip(const std::vector<T1> &vec1, const std::vector<T2> &vec2)
+    // Zip two iterators together, returning a vector where vec[i] = tuple{iter1[i], iter2[i]}
+    // Stop at the end of the shortest iterator
+    // todo: use type aliases
+    template <std::ranges::input_range Iter1, std::ranges::input_range Iter2>
+    constexpr std::vector<std::tuple<typename Iter1::value_type, typename Iter2::value_type>> zip(const Iter1 &iter1, const Iter2 &iter2)
     {
-        const size_t min_length{std::min(vec1.size(), vec2.size())};
-        std::vector<std::tuple<T1, T2>> result{};
-        for (size_t i{0}; i < min_length; i++)
-            result.push_back(std::make_tuple(vec1[i], vec2[i]));
+        typename Iter1::const_iterator begin1{iter1.begin()};
+        const typename Iter1::const_iterator end1{iter1.end()};
+        typename Iter2::const_iterator begin2{iter2.begin()};
+        const typename Iter2::const_iterator end2{iter2.end()};
+        std::vector<std::tuple<typename Iter1::value_type, typename Iter2::value_type>> result{};
+        while (begin1 != end1 && begin2 != end2)
+        {
+            result.push_back(std::make_tuple(*begin1, *begin2));
+            ++begin1;
+            ++begin2;
+        }
         return result;
     }
 

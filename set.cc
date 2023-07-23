@@ -52,10 +52,8 @@ public:
         requires std::same_as<std::ranges::range_value_t<Iter>, ValueType>
     void add(const Iter &items)
     {
-        auto first = items.begin();
-        auto last = items.end();
-        for (; first != last; ++first)
-            add(*first);
+        for (const ValueType &item : items)
+            add(item);
     }
 
     // note this is O(n), if removing multiple items then use set::difference instead, which is also O(n)
@@ -76,7 +74,7 @@ public:
 
     std::vector<ValueType> items() const { return all_items; }
 
-    // TODO: make these iterators, not pointers
+    // TODO: make these const_iterators, not pointers
     // note: must return constant pointers, to prevent returned items from being mutated,
     // and causing inconsistency between set_values and all_items
     const ValueType *begin() const { return &all_items[0]; }
@@ -210,6 +208,15 @@ void test_set_iteration()
 
     Set<int> to_sum{1, 2, 3, 4};
     assert(std::accumulate(to_sum.begin(), to_sum.end(), 0) == 10);
+
+    /* TODO: update Set<int> to be a proper iterator, so these tests pass
+    Set<int> sliced{itertools::slice(to_sum, 0, -1)};
+    assert(sliced.items() == (std::vector<int>{1, 2, 3}));
+
+    std::vector<std::tuple<int, std::string>> zipped{itertools::zip(to_sum, std::vector<std::string>{"hello", "there"})};
+    std::vector<std::tuple<int, std::string>> expected_result{std::vector{std::make_tuple(1, std::string("hello")), std::make_tuple(2, std::string("there"))}};
+    assert(zipped == expected_result);
+    */
 
     // below works when returning T*, fails for const T*
     // trying to define T *begin() const fails, as the compiler recognizes returning a non const T* means the function cannot be const
