@@ -160,7 +160,7 @@ namespace itertools
         for (const T &item : init)
             stream << item << separator;
         stream << last;
-        return std::string(std::istreambuf_iterator(stream), {});
+        return strlib::to_str(std::move(stream));
     }
 
     // Chain two vectors together

@@ -6,6 +6,7 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include "strlib.h"
 
 namespace testutils
 {
@@ -14,7 +15,7 @@ namespace testutils
     {
         std::stringstream stream{};
         stream << value;
-        return std::string(std::istreambuf_iterator(stream), {});
+        return strlib::to_str(std::move(stream));
     }
 }
 
