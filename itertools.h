@@ -12,6 +12,7 @@
 #include <ranges>
 #include "math.h"
 #include "strlib.h"
+#include "slice.h"
 
 template <typename T1, typename T2>
 std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
@@ -41,35 +42,12 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
     return os;
 }
 
-namespace __private_utils
-{
-    // Keep the idx within the bounds of 0, and the vector's length (for slicing only)
-    // if idx is out of bounds, will bind it to the minimum
-    constexpr int _bound_index(const long &idx, const long &length)
-    {
-        const long result = (idx < 0) ? std::max(length + idx, long{0}) : std::min(idx, length);
-        assert(result >= 0 && result <= length);
-        return result;
-    }
-}
-
 namespace itertools
 {
     constexpr void validate_index(const int &index, const int &length)
     {
         if (index < 0 || index >= length)
             throw std::range_error(strlib::format("Invalid index {}, must be between 0 and length", index));
-    }
-
-    // Slice an iterator from [start, end)  (i.e. not including the end index)
-    // Handles negative numbers and slices where end > length
-    template <std::ranges::input_range Iter>
-    constexpr Iter slice(const Iter &iter, const long &start, const long &end)
-    {
-        const long length{std::distance(iter.begin(), iter.end())};
-        const long start_idx{__private_utils::_bound_index(start, length)};
-        const long end_idx{__private_utils::_bound_index(end, length)};
-        return Iter(iter.begin() + start_idx, iter.begin() + end_idx);
     }
 
     template <typename T>
@@ -106,7 +84,6 @@ namespace itertools
 
     // Zip two iterators together, returning a vector where vec[i] = tuple{iter1[i], iter2[i]}
     // Stop at the end of the shortest iterator
-    // todo: use type aliases
     template <std::ranges::input_range Iter1, std::ranges::input_range Iter2>
     constexpr std::vector<std::tuple<typename Iter1::value_type, typename Iter2::value_type>> zip(const Iter1 &iter1, const Iter2 &iter2)
     {
@@ -173,8 +150,7 @@ namespace itertools
         return strlib::to_str(std::move(stream));
     }
 
-    // Chain two iterators together
-    // TODO: allow this function to take any number of iterators
+    // Chain any number of iterators together
     template <std::ranges::input_range Iter1, std::ranges::input_range Iter2, std::ranges::input_range... Iters>
         requires std::same_as<typename Iter1::value_type, typename Iter2::value_type>
     constexpr std::vector<typename Iter1::value_type> chain(const Iter1 &iter1, const Iter2 &iter2, const Iters... iters)
