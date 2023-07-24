@@ -68,6 +68,7 @@
         "span": "cpp",
         "functional": "cpp",
         "iterator": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "list": "cpp"
     }
 }

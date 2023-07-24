@@ -17,9 +17,10 @@ public:
     constexpr Map(const size_t &size = 100000)
         : map_set{Set<Key, std::tuple<Key, Value>>(get_first_elem_func<Key, Value>, size)} {};
 
-    void set(const Key key, const Value val)
+    // set item with that key to the given item, updating it if the key already exists
+    void set(const Key &key, const Value &val)
     {
-        map_set.add(std::make_tuple(key, val));
+        map_set.set(key, std::make_tuple(key, val));
     }
 
     std::optional<Value> get(const Key &key) const
@@ -36,6 +37,14 @@ public:
     }
 
     std::optional<Value> operator[](const Key &key) const { return get(key); }
+
+    void update(const Map<Key, Value> &other)
+    {
+        for (const auto &[key, value] : other.items())
+            set(key, value);
+    }
+
+    std::vector<std::tuple<Key, Value>> items() const { return map_set.items(); }
 
 private:
     Set<Key, std::tuple<Key, Value>> map_set;
@@ -74,6 +83,16 @@ void test_map()
     assert(test_map[0] == "hello there!");
     assert(test_map[1] == "general kenobi!");
     assert(test_map[2] == std::nullopt);
+
+    test_map.set(0, "your move");
+    assert(test_map[0] == "your move");
+
+    Map<int, std::string> to_update{};
+    to_update.set(2, "you are a bold one!");
+    to_update.update(test_map);
+    assert(to_update[0] == "your move");
+    assert(to_update[1] == "general kenobi!");
+    assert(to_update[2] == "you are a bold one!");
 }
 
 int main()

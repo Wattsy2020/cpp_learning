@@ -57,6 +57,13 @@ public:
         return all_items.size();
     }
 
+    bool contains(const ValueType &item) const
+    {
+        std::function<bool(ValueType)> is_item{[item](ValueType value)
+                                               { return value == item; }};
+        return functools::any(is_item, set_values[hash(item)]);
+    }
+
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
     void add(const ValueType &item)
     {
@@ -64,6 +71,15 @@ public:
             return;
         set_values[hash(item)].push_back(item);
         all_items.push_back(item);
+    }
+
+    // set item with that key to the given item, updating it if the key already exists
+    void set(const HashType &key, const ValueType &to_insert)
+    {
+        for (const ValueType &item : set_values[hash_key(key)])
+            if (key_func(item) == key)
+                remove(item);
+        add(to_insert);
     }
 
     template <std::input_iterator Iter>
@@ -81,13 +97,6 @@ public:
             return;
         std::erase(set_values[hash(item)], item);
         std::erase(all_items, item);
-    }
-
-    bool contains(const ValueType &item) const
-    {
-        std::function<bool(ValueType)> is_item{[item](ValueType value)
-                                               { return value == item; }};
-        return functools::any(is_item, set_values[hash(item)]);
     }
 
     std::optional<ValueType> get(const HashType &key) const

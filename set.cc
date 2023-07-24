@@ -158,6 +158,9 @@ void test_set_key_func()
     assert(set.items() == (std::vector{vec1, vec2}));
 
     assert(set.get(5) == vec1);
+    std::vector<int> new_vec{1, 2, 3, 5};
+    set.set(5, new_vec);
+    assert(set.get(5) == new_vec);
 }
 
 int main()
