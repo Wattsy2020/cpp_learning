@@ -175,13 +175,15 @@ namespace itertools
 
     // Chain two iterators together
     // TODO: allow this function to take any number of iterators
-    template <std::ranges::input_range Iter1, std::ranges::input_range Iter2>
+    template <std::ranges::input_range Iter1, std::ranges::input_range Iter2, std::ranges::input_range... Iters>
         requires std::same_as<typename Iter1::value_type, typename Iter2::value_type>
-    constexpr std::vector<typename Iter1::value_type> chain(const Iter1 &iter1, const Iter2 &iter2)
+    constexpr std::vector<typename Iter1::value_type> chain(const Iter1 &iter1, const Iter2 &iter2, const Iters... iters)
     {
         std::vector<typename Iter1::value_type> combined(iter1.begin(), iter1.end());
         for (const typename Iter2::value_type item : iter2)
             combined.push_back(item);
+        if constexpr (sizeof...(iters) > 0)
+            return chain(combined, iters...);
         return combined;
     }
 }

@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <vector>
 #include <list>
+#include <forward_list>
 #include <tuple>
 #include <iostream>
 #include <exception>
@@ -113,6 +114,14 @@ void test_chain()
     std::list<int> list1{6, 7, 8};
     std::vector<int> combined2{itertools::chain(combined, list1)};
     assert(combined2 == itertools::range(1, 9));
+
+    std::vector<int> combined3{
+        itertools::chain(
+            std::vector<int>{1, 2},
+            std::forward_list<int>{3, 4},
+            std::list<int>{5, 6},
+            std::vector<int>{7, 8})};
+    assert(combined3 == itertools::range(1, 9));
 }
 
 int main()
