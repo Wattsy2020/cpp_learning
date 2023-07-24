@@ -156,6 +156,8 @@ void test_set_key_func()
     assert(!set.contains(std::vector<int>{1}));
     assert(set.size() == 2);
     assert(set.items() == (std::vector{vec1, vec2}));
+
+    assert(set.get(5) == vec1);
 }
 
 int main()

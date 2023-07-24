@@ -1,14 +1,15 @@
+#ifndef LIAM_SET
+#define LIAM_SET
+
 #include <assert.h>
 #include <vector>
 #include <iostream>
 #include <functional>
 #include <ranges>
 #include <iterator>
+#include <optional>
 #include "itertools.h"
 #include "functools.h"
-
-#ifndef LIAM_SET
-#define LIAM_SET
 
 template <typename HashType, typename ValueType = HashType>
 class Set
@@ -89,7 +90,18 @@ public:
         return functools::any(is_item, set_values[hash(item)]);
     }
 
-    std::vector<ValueType> items() const { return all_items; }
+    std::optional<ValueType> get(const HashType &key) const
+    {
+        for (const ValueType &item : set_values[hash_key(key)])
+            if (key_func(item) == key)
+                return std::make_optional(item);
+        return std::nullopt;
+    }
+
+    std::vector<ValueType> items() const
+    {
+        return all_items;
+    }
 
     // TODO: make these const_iterators, not pointers
     // note: must return constant pointers, to prevent returned items from being mutated,
@@ -105,10 +117,13 @@ private:
     const std::function<HashType(ValueType)> key_func;
     std::vector<std::vector<ValueType>> set_values; // vector where vector[hash] is a vector containing all elemetns with that hash
     std::vector<ValueType> all_items;
-    size_t hash(const ValueType &item) const
+
+    size_t hash_key(const HashType &item) const
     {
-        return hasher(key_func(item)) % set_values.size();
+        return hasher(item) % set_values.size();
     };
+
+    size_t hash(const ValueType &item) const { return hash_key(key_func(item)); }
 };
 
 template <typename T>
