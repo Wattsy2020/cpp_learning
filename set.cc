@@ -3,6 +3,7 @@
 #include <iostream>
 #include <functional>
 #include <ranges>
+#include <iterator>
 #include "itertools.h"
 #include "functools.h"
 #include "testlib.h"
@@ -26,7 +27,7 @@ public:
         const std::function<HashType(ValueType)> key_func = std::identity(),
         size_t const &size = 100000) : Set(key_func, size)
     {
-        add(items);
+        add(items.cbegin(), items.cend());
     }
 
     constexpr Set(
@@ -34,10 +35,24 @@ public:
         const std::function<HashType(ValueType)> key_func = std::identity(),
         size_t const &size = 100000) : Set(key_func, size)
     {
-        add(items);
+        add(items.begin(), items.end());
     };
 
-    int size() const { return all_items.size(); }
+    template <std::input_iterator Iter>
+        requires std::same_as<typename std::iterator_traits<Iter>::value_type, ValueType>
+    constexpr Set(
+        const Iter &begin,
+        const Iter &end,
+        const std::function<HashType(ValueType)> key_func = std::identity(),
+        size_t const &size = 100000) : Set(key_func, size)
+    {
+        add(begin, end);
+    }
+
+    int size() const
+    {
+        return all_items.size();
+    }
 
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
     void add(const ValueType &item)
@@ -48,12 +63,12 @@ public:
         all_items.push_back(item);
     }
 
-    template <std::ranges::input_range Iter>
-        requires std::same_as<std::ranges::range_value_t<Iter>, ValueType>
-    void add(const Iter &items)
+    template <std::input_iterator Iter>
+        requires std::same_as<typename std::iterator_traits<Iter>::value_type, ValueType>
+    void add(Iter begin, const Iter end)
     {
-        for (const ValueType &item : items)
-            add(item);
+        for (; begin != end; ++begin)
+            add(*begin);
     }
 
     // note this is O(n), if removing multiple items then use set::difference instead, which is also O(n)
@@ -209,10 +224,10 @@ void test_set_iteration()
     Set<int> to_sum{1, 2, 3, 4};
     assert(std::accumulate(to_sum.begin(), to_sum.end(), 0) == 10);
 
-    /* TODO: update Set<int> to be a proper iterator, so these tests pass
     Set<int> sliced{itertools::slice(to_sum, 0, -1)};
     assert(sliced.items() == (std::vector<int>{1, 2, 3}));
 
+    /* TODO: update Set<int> to be a proper iterator, so these tests pass
     std::vector<std::tuple<int, std::string>> zipped{itertools::zip(to_sum, std::vector<std::string>{"hello", "there"})};
     std::vector<std::tuple<int, std::string>> expected_result{std::vector{std::make_tuple(1, std::string("hello")), std::make_tuple(2, std::string("there"))}};
     assert(zipped == expected_result);
