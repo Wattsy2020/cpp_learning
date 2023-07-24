@@ -1,7 +1,8 @@
 #include <assert.h>
 #include <vector>
-#include <iostream>
+#include <list>
 #include <tuple>
+#include <iostream>
 #include <exception>
 #include "itertools.h"
 #include "testlib.h"
@@ -108,6 +109,10 @@ void test_chain()
     std::vector<int> combined{itertools::chain(vec1, vec2)};
     vec1[0] = 5; // ensure we're copying, not referencing, the input vectors
     assert(combined == (std::vector<int>{1, 2, 3, 4, 5}));
+
+    std::list<int> list1{6, 7, 8};
+    std::vector<int> combined2{itertools::chain(combined, list1)};
+    assert(combined2 == itertools::range(1, 9));
 }
 
 int main()

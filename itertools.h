@@ -173,14 +173,15 @@ namespace itertools
         return strlib::to_str(std::move(stream));
     }
 
-    // Chain two vectors together
-    // TODO: allow this function to take any number of vectors
-    template <typename T>
-    constexpr std::vector<T> chain(const std::vector<T> &vec1, const std::vector<T> &vec2)
+    // Chain two iterators together
+    // TODO: allow this function to take any number of iterators
+    template <std::ranges::input_range Iter1, std::ranges::input_range Iter2>
+        requires std::same_as<typename Iter1::value_type, typename Iter2::value_type>
+    constexpr std::vector<typename Iter1::value_type> chain(const Iter1 &iter1, const Iter2 &iter2)
     {
-        std::vector<T> combined(vec1.size() + vec2.size());
-        std::copy(vec1.begin(), vec1.end(), combined.begin());
-        std::copy(vec2.begin(), vec2.end(), combined.begin() + vec1.size());
+        std::vector<typename Iter1::value_type> combined(iter1.begin(), iter1.end());
+        for (const typename Iter2::value_type item : iter2)
+            combined.push_back(item);
         return combined;
     }
 }
