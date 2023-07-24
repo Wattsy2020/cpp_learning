@@ -144,7 +144,7 @@ void test_linked_list_access()
     assert(list.items() == (std::vector<int>{1, 2, 3, 4}));
     testlib::raises<std::range_error>([&list]()
                                       { list[-1]; },
-                                      "Invalid index -1, must be between 0 and length");
+                                      "Invalid index -1, must be between 0 and 4");
 }
 
 void test_linked_list_insert()

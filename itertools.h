@@ -47,7 +47,7 @@ namespace itertools
     constexpr void validate_index(const int &index, const int &length)
     {
         if (index < 0 || index >= length)
-            throw std::range_error(strlib::format("Invalid index {}, must be between 0 and length", index));
+            throw std::range_error(strlib::format("Invalid index {}, must be between 0 and {}", index, length));
     }
 
     template <typename T>

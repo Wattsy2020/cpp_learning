@@ -1,3 +1,6 @@
+#ifndef ITERTOOLS_SLICE
+#define ITERTOOLS_SLICE
+
 #include <ranges>
 #include <math.h>
 #include <assert.h>
@@ -27,3 +30,5 @@ namespace itertools
         return Iter(iter.begin() + start_idx, iter.begin() + end_idx);
     }
 }
+
+#endif
