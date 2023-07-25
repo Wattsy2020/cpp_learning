@@ -12,10 +12,10 @@ template <typename Key, typename Value>
 class Map
 {
 public:
-    // typedef Item std::tuple<Key, Value>;
+    typedef std::tuple<Key, Value> Item;
 
     constexpr Map(const size_t &size = 100000)
-        : map_set{Set<Key, std::tuple<Key, Value>>(get_first_elem_func<Key, Value>, size)} {};
+        : map_set{Set<Key, Item>(get_first_elem_func<Key, Value>, size)} {};
 
     // set item with that key to the given item, updating it if the key already exists
     void set(const Key &key, const Value &val)
@@ -25,7 +25,7 @@ public:
 
     std::optional<Value> get(const Key &key) const
     {
-        std::optional<std::tuple<Key, Value>> result{map_set.get(key)};
+        std::optional<Item> result{map_set.get(key)};
         if (result)
             return std::make_optional(std::get<1, Key, Value>(result.value()));
         return std::nullopt;
@@ -44,10 +44,10 @@ public:
             set(key, value);
     }
 
-    std::vector<std::tuple<Key, Value>> items() const { return map_set.items(); }
+    std::vector<Item> items() const { return map_set.items(); }
 
 private:
-    Set<Key, std::tuple<Key, Value>> map_set;
+    Set<Key, Item> map_set;
 };
 
 void test_tuple()
