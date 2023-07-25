@@ -2,7 +2,7 @@
 #include <functional>
 #include <tuple>
 
-// because std::get<0, Key, Value> on it's own is overloaded and doesn't realise it can be casted to take a tuple
+// because std::get<0, Key, Value> on its own is overloaded and doesn't realise it can take a tuple
 template <typename T1, typename T2>
 std::function<T1(std::tuple<T1, T2>)> get_first_elem_func{
     [](const std::tuple<T1, T2> &tuple)
@@ -16,6 +16,12 @@ public:
 
     constexpr Map(const size_t &size = 100000)
         : map_set{Set<Key, Item>(get_first_elem_func<Key, Value>, size)} {};
+
+    constexpr Map(std::initializer_list<Item> items, const size_t &size = 100000) : Map(size)
+    {
+        for (const Item &item : items)
+            map_set.set(std::get<0, Key, Value>(item), item);
+    }
 
     // set item with that key to the given item, updating it if the key already exists
     void set(const Key &key, const Value &val)
@@ -45,6 +51,10 @@ public:
     }
 
     std::vector<Item> items() const { return map_set.items(); }
+
+    friend bool operator==(const Map<Key, Value> &left, const Map<Key, Value> &right) { return left.map_set == right.map_set; }
+
+    friend bool operator!=(const Map<Key, Value> &left, const Map<Key, Value> &right) { return !(left == right); }
 
 private:
     Set<Key, Item> map_set;
@@ -95,8 +105,18 @@ void test_map()
     assert(to_update[2] == "you are a bold one!");
 }
 
+void test_map_initializer_list()
+{
+    Map<int, std::string> map1{{0, "hello"}, {1, "there"}};
+    Map<int, std::string> map2{};
+    map2.set(1, "there");
+    map2.set(0, "hello");
+    assert(map1 == map2);
+}
+
 int main()
 {
     test_tuple();
     test_map();
+    test_map_initializer_list();
 }
