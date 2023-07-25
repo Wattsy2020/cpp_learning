@@ -135,16 +135,6 @@ private:
     size_t hash(const ValueType &item) const { return hash_key(key_func(item)); }
 };
 
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const Set<T> &set)
-{
-    os << "{ ";
-    for (const T &item : set.items())
-        os << item << " ";
-    os << "}";
-    return os;
-}
-
 namespace set
 {
     // given a set, returns a function that takes an item and checks if it belongs to that set
@@ -197,5 +187,24 @@ namespace set
         return is_subset(set_right, set_left);
     }
 }
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const Set<T> &set)
+{
+    os << "{ ";
+    for (const T &item : set.items())
+        os << item << " ";
+    os << "}";
+    return os;
+}
+
+template <typename T>
+bool operator==(const Set<T> &left, const Set<T> &right)
+{
+    return left.size() == right.size() && set::is_subset(left, right) && set::is_subset(right, left);
+}
+
+template <typename T>
+bool operator!=(const Set<T> &left, const Set<T> &right) { return !(left == right); }
 
 #endif

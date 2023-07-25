@@ -141,6 +141,18 @@ void test_set_is_superset()
     assert(set::is_superset(set2, set1));
 }
 
+void test_set_equality()
+{
+    Set<int> set1{2, 3};
+    Set<int> set2{2, 3, 4, 5};
+    Set<int> set3{3};
+    Set<int> set4{3, 2};
+    assert(set1 != set2);
+    assert(set1 != set3);
+    assert(set2 != set3);
+    assert(set1 == set4);
+}
+
 void test_set_key_func()
 {
     // add unhashable type, but with a function that converts it to a hashable type
@@ -178,5 +190,6 @@ int main()
     test_set_difference();
     test_set_is_subset();
     test_set_is_superset();
+    test_set_equality();
     test_set_key_func();
 }
