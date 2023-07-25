@@ -1,6 +1,7 @@
-#include "set.h"
 #include <functional>
 #include <tuple>
+#include "set.h"
+#include "concepts.h"
 
 // because std::get<0, Key, Value> on its own is overloaded and doesn't realise it can take a tuple
 template <typename T1, typename T2>
@@ -8,7 +9,7 @@ std::function<T1(std::tuple<T1, T2>)> get_first_elem_func{
     [](const std::tuple<T1, T2> &tuple)
     { return std::get<0, T1, T2>(tuple); }};
 
-template <typename Key, typename Value>
+template <Hashable Key, typename Value>
 class Map
 {
 public:
@@ -70,8 +71,6 @@ void test_tuple()
         [](std::tuple<int, bool> tuple_input)
         { return std::get<0, int, bool>(tuple_input); }};
     assert(test(std::make_tuple(10, true)) == 10);
-    // Set<int, std::tuple<int, bool>> test_set(std::function<int(std::tuple<int, bool>)>{std::get<0, int, bool>});
-    // test_set.add(std::make_tuple(10, true));
 }
 
 void test_map()

@@ -10,8 +10,9 @@
 #include <optional>
 #include "itertools.h"
 #include "functools.h"
+#include "concepts.h"
 
-template <typename HashType, typename ValueType = HashType>
+template <Hashable HashType, typename ValueType = HashType>
 class Set
 {
 public:
