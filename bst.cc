@@ -2,6 +2,8 @@
 #include <concepts>
 #include <optional>
 #include <assert.h>
+#include <iterator>
+#include <ranges>
 #include "itertools.h"
 #include "testlib.h"
 
@@ -11,23 +13,42 @@ class BinaryTree
 public:
     BinaryTree() : items{} {};
 
-    void add(const T &item)
+    template <std::ranges::input_range Iter>
+        requires std::same_as<std::ranges::range_value_t<Iter>, T>
+    BinaryTree(const Iter items) : BinaryTree()
     {
-        int current_node{0};
-        while (node_exists(current_node))
-        {
-            const T current_val{items[current_node].value()};
-            if (item < current_val)
-                current_node = 2 * current_node + 1;
-            else if (item == current_val)
-                return;
-            else
-                current_node = 2 * current_node + 2;
-        }
-        add_node(current_node, item);
+        add(items.begin(), items.end());
     }
 
-    std::vector<std::optional<T>> preorder_traversal() const { return items; }
+    BinaryTree(const std::initializer_list<T> items) : BinaryTree()
+    {
+        add(items.begin(), items.end());
+    }
+
+    void add(const T &item)
+    {
+        const int new_node_idx{find_node(item)};
+        if (!node_exists(new_node_idx))
+            add_node(new_node_idx, item);
+    }
+
+    template <std::input_iterator Iter>
+        requires std::same_as<typename std::iterator_traits<Iter>::value_type, T>
+    void add(Iter begin, const Iter end)
+    {
+        for (; begin != end; ++begin)
+            add(*begin);
+    }
+
+    bool contains(const T &item)
+    {
+        return node_exists(find_node(item));
+    }
+
+    std::vector<std::optional<T>> preorder_traversal() const
+    {
+        return items;
+    }
 
 private:
     // items[0]: root
@@ -40,6 +61,24 @@ private:
     bool node_exists(const int idx) const
     {
         return idx < items.size() && items[idx].has_value();
+    }
+
+    // find the idx of the given item in the tree
+    // if item doesn't exist in the tree, then return the index where it should be placed
+    int find_node(const T &item) const
+    {
+        int current_node{0};
+        while (node_exists(current_node))
+        {
+            const T current_val{items[current_node].value()};
+            if (item < current_val)
+                current_node = 2 * current_node + 1;
+            else if (item == current_val)
+                return current_node;
+            else
+                current_node = 2 * current_node + 2;
+        }
+        return current_node;
     }
 
     // add node to the tree, increasing the vector size if necessary
@@ -81,6 +120,17 @@ void test_bst_outstream()
     bst.add(3);
     bst.add(1);
     testlib::assert_outstream(bst, "[ 2 0 5 None 1 3 ]");
+}
+
+void test_bst_contains()
+{
+    std::vector<int> items{5, 2, 0, 9, 10, 4, 7};
+    BinaryTree<int> bst(items);
+    for (const int item : items)
+        assert(bst.contains(item));
+    assert(!bst.contains(1));
+    bst.add(1);
+    assert(bst.contains(1));
 }
 
 int main()
