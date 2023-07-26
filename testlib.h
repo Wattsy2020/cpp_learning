@@ -40,7 +40,8 @@ namespace testlib
     template <typename T>
     void assert_outstream(const T &value, std::string expected_result)
     {
-        assert(testutils::get_outstream(value) == expected_result);
+        const std::string oustream_result{testutils::get_outstream(value)};
+        assert(oustream_result == expected_result);
     }
 }
 
