@@ -64,7 +64,7 @@ public:
         itertools::validate_index(index, length);
         std::shared_ptr<__node::Node<T>> prev_node = get_node(index - 1);
         std::shared_ptr<__node::Node<T>> following_node = prev_node->next_node->next_node;
-        if (following_node)
+        if (!following_node)
             last = prev_node; // removing the last item, so update it to point to prev_node
         prev_node->next_node = following_node;
         --length;
@@ -175,6 +175,11 @@ void test_linked_list_remove()
     one_item.remove(0);
     std::vector<int> result3{one_item.items()};
     assert(result3 == (std::vector<int>{}));
+
+    // ensure tail is updated when removing this last one
+    LinkedList<int> list2{1, 2, 3, 4};
+    list2.remove(3);
+    assert(list2.back() == 3);
 }
 
 void test_linked_list_bool()
