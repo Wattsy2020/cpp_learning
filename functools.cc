@@ -18,9 +18,9 @@ void test_any_all()
 void test_map()
 {
     std::vector<int> nums = itertools::range(1, 8, 2);
-    std::function<bool(int)> greater_than_3{[](int a)
-                                            { return a > 3; }};
-    std::vector<bool> result{functools::map(greater_than_3, nums)};
+    std::vector<bool> result{functools::map([](int a)
+                                            { return a > 3; },
+                                            nums)};
     std::vector<bool> expected_result{false, false, true, true};
     assert(result == expected_result);
 }
@@ -28,8 +28,8 @@ void test_map()
 void test_filter()
 {
     std::vector<int> nums = itertools::range(1, 8, 2);
-    std::function<bool(int)> greater_than_3{[](int a)
-                                            { return a > 3; }};
+    auto greater_than_3{[](int a)
+                        { return a > 3; }};
     std::vector<int> result{functools::filter(greater_than_3, nums)};
     std::vector<int> expected_result{5, 7};
     assert(result == expected_result);
@@ -37,9 +37,9 @@ void test_filter()
 
 void test_compose()
 {
-    std::function<bool(int)> greater_than_3{[](int a)
-                                            { return a > 3; }};
-    std::function<std::string(int)> composed{functools::compose(greater_than_3, bool_to_str)};
+    auto greater_than_3{[](int a)
+                        { return a > 3; }};
+    std::function<std::string(int)> composed{functools::compose<int>(greater_than_3, bool_to_str)};
     std::string expected_result{"true"};
     std::string result{composed(5)};
     assert(result == expected_result);
@@ -47,8 +47,8 @@ void test_compose()
 
 void test_count()
 {
-    std::function<bool(int)> greater_than_3{[](int a)
-                                            { return a > 3; }};
+    auto greater_than_3{[](int a)
+                        { return a > 3; }};
     std::vector<int> nums = itertools::range(1, 8, 2);
     int result{functools::count(greater_than_3, nums)};
     assert(result == 2);
@@ -87,7 +87,7 @@ int main()
     std::vector<int> nums = itertools::range(1, 20, 2);
     std::function<bool(int, int)> greater_than_func{greater_than};
     std::function<bool(int)> greater_than_3{functools::Partial(greater_than_func, 3)};
-    std::cout << nums << " " << functools::map(functools::compose(greater_than_3, bool_to_str), nums) << std::endl;
+    std::cout << nums << " " << functools::map(functools::compose<int>(greater_than_3, bool_to_str), nums) << std::endl;
     std::cout << functools::count(greater_than_3, nums) << std::endl;
     std::cout << functools::count(to_func(functools::Partial(greater_than_func, 10)), nums) << std::endl;
 

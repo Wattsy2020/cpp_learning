@@ -4,39 +4,45 @@
 #include <vector>
 #include <numeric>
 #include <functional>
+#include <concepts>
 
 namespace functools
 {
     // TODO: redo this in an iterator style like python, so we can lazily map
-    template <typename T1, typename T2>
-    constexpr std::vector<T2> map(const std::function<T2(T1)> &func, const std::vector<T1> &vec)
+    template <typename Arg, typename Func>
+        requires std::regular_invocable<Func, Arg>
+    constexpr std::vector<std::invoke_result_t<Func, Arg>> map(const Func &func, const std::vector<Arg> &vec)
     {
-        std::vector<T2> result{};
-        for (const T1 &item : vec)
+        std::vector<std::invoke_result_t<Func, Arg>> result{};
+        for (const Arg &item : vec)
             result.push_back(func(item));
         return result;
     }
 
-    template <typename T>
-    constexpr std::vector<T> filter(const std::function<bool(T)> &pred, const std::vector<T> &vec)
+    template <typename Arg, typename Pred>
+        requires std::predicate<Pred, Arg>
+    constexpr std::vector<Arg> filter(const Pred &pred, const std::vector<Arg> &vec)
     {
-        std::vector<T> filtered{};
-        for (const T &item : vec)
+        std::vector<Arg> filtered{};
+        for (const Arg &item : vec)
             if (pred(item))
                 filtered.push_back(item);
         return filtered;
     }
 
-    template <typename T1, typename T2, typename T3>
-    constexpr std::function<T3(T1)> compose(const std::function<T2(T1)> &func1, const std::function<T3(T2)> &func2)
+    // note: need to specify the input type to Func1, as Func1 could be overloaded and have multiple inputs
+    template <typename Arg, typename Func1, typename Func2>
+        requires std::regular_invocable<Func1, Arg> && std::regular_invocable<Func2, std::invoke_result_t<Func1, Arg>>
+    constexpr std::function<std::invoke_result_t<Func2, std::invoke_result_t<Func1, Arg>>(Arg)>
+    compose(const Func1 &func1, const Func2 &func2)
     {
-        return std::function<T3(T1)>{
-            [&func1, &func2](T1 input_arg)
-            { return func2(func1(input_arg)); }};
+        return {[&func1, &func2](Arg input_arg)
+                { return func2(func1(input_arg)); }};
     }
 
-    template <typename ACC, typename VAL>
-    constexpr ACC reduce(const std::function<ACC(VAL, ACC)> &reducer, const std::vector<VAL> &vec, const ACC &init)
+    template <typename ACC, typename VAL, typename Func>
+        requires std::regular_invocable<Func, VAL, ACC>
+    constexpr ACC reduce(const Func &reducer, const std::vector<VAL> &vec, const ACC &init)
     {
         ACC result{init};
         for (const VAL &value : vec)
@@ -62,23 +68,20 @@ namespace functools
         return true;
     }
 
-    template <typename T>
-    constexpr bool any(const std::function<bool(T)> &predicate, const std::vector<T> &vec)
+    template <typename T, typename Pred>
+        requires std::predicate<Pred, T>
+    constexpr bool any(const Pred &predicate, const std::vector<T> &vec)
     {
         return any(map(predicate, vec));
     }
 
-    template <typename T>
-    constexpr bool all(const std::function<bool(T)> &predicate, const std::vector<T> &vec)
+    template <typename T, typename Pred>
+        requires std::predicate<Pred, T>
+    constexpr bool all(const Pred &predicate, const std::vector<T> &vec)
     {
         return all(map(predicate, vec));
     }
 
-    template <typename T>
-    constexpr T plus(const T &num1, const T &num2) { return num1 + num2; }
-
-    // note: no type-safety for templates, unlike haskell I can see this takes any T
-    // when really it needs a T that overloads (+)
     template <typename T>
     constexpr T sum(const std::vector<T> &vec)
     {
@@ -87,11 +90,11 @@ namespace functools
 
     constexpr int bool_to_int(const bool &b) { return int(b); }
 
-    template <typename T>
-    constexpr int count(const std::function<bool(T)> &pred, const std::vector<T> &vec)
+    template <typename T, typename Pred>
+        requires std::predicate<Pred, T>
+    constexpr int count(const Pred &pred, const std::vector<T> &vec)
     {
-        const std::function<int(T)> pred_to_int{compose(pred, std::function<int(bool)>{bool_to_int})};
-        return sum(map(pred_to_int, vec));
+        return sum(map(compose<T>(pred, bool_to_int), vec));
     }
 
     // TODO: make this take any number of type arguments
