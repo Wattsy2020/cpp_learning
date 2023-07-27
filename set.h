@@ -60,9 +60,10 @@ public:
 
     bool contains(const ValueType &item) const
     {
-        std::function<bool(ValueType)> is_item{[item](ValueType value)
-                                               { return value == item; }};
-        return functools::any(is_item, set_values[hash(item)]);
+        return functools::any(
+            [item](ValueType value)
+            { return value == item; },
+            set_values[hash(item)]);
     }
 
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
@@ -171,8 +172,8 @@ namespace set
     template <typename T>
     constexpr Set<T> difference(const Set<T> &set_left, const Set<T> &set_right)
     {
-        std::function<bool(T)> no_overlap{[set_right](const T &item)
-                                          { return !set_right.contains(item); }};
+        auto no_overlap{[set_right](const T &item)
+                        { return !set_right.contains(item); }};
         return Set<T>(functools::filter(no_overlap, set_left.items()));
     }
 

@@ -6,7 +6,6 @@
 #include <ranges>
 #include <cmath>
 #include <functional>
-#include "functools.h"
 #include "itertools.h"
 #include "testlib.h"
 
