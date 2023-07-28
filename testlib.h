@@ -13,9 +13,9 @@ namespace testutils
     template <typename T>
     std::string get_outstream(const T &value)
     {
-        std::stringstream stream{};
+        std::ostringstream stream{};
         stream << value;
-        return strlib::to_str(std::move(stream));
+        return stream.str();
     }
 }
 

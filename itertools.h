@@ -142,12 +142,12 @@ namespace itertools
         if (vec.empty())
             return "";
 
-        std::stringstream stream{};
+        std::ostringstream stream{};
         auto [init, last] = itertools::init_last(vec);
         for (const T &item : init)
             stream << item << separator;
         stream << last;
-        return strlib::to_str(std::move(stream));
+        return stream.str();
     }
 
     // Chain any number of iterators together

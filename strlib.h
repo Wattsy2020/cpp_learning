@@ -11,8 +11,6 @@ namespace strlib
 {
     std::string to_str(bool);
 
-    std::string to_str(std::stringstream stream);
-
     template <typename T>
     concept Printable = requires(std::ostream &os, T var) {
         {
@@ -25,7 +23,7 @@ namespace strlib
     {
         // gradually extract from str, when finding two brackets then insert the arg instead
         const long length{static_cast<long>(str.length())};
-        std::stringstream result{};
+        std::ostringstream result{};
         for (int i = 0; i < length; ++i)
         {
             if (str[i] == '{' && i + 1 < length && str[i + 1] == '}')
@@ -42,7 +40,7 @@ namespace strlib
             else
                 result << str[i];
         }
-        return to_str(std::move(result));
+        return result.str();
     }
 }
 

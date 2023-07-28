@@ -7,11 +7,6 @@ std::string strlib::to_str(bool b)
     return (b) ? "true" : "false";
 }
 
-std::string strlib::to_str(std::stringstream stream)
-{
-    return std::string(std::istreambuf_iterator(stream), {});
-}
-
 struct test_struct
 {
     int a;
