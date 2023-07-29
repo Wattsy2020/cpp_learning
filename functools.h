@@ -97,6 +97,14 @@ namespace functools
         return sum(map(compose<T>(pred, bool_to_int), vec));
     }
 
+    // Apply function to a value in an optional, returning a new optional with the resulting value, or an empty optional if there was to value
+    template <typename T, typename Func>
+        requires std::regular_invocable<Func, T>
+    constexpr std::optional<std::invoke_result_t<Func, T>> transform(const Func &func, const std::optional<T> &item)
+    {
+        return (item) ? std::make_optional(func(item.value())) : std::nullopt;
+    }
+
     // TODO: make this take any number of type arguments
     template <typename ARG1, typename ARG2, typename RET>
     class Partial

@@ -71,6 +71,16 @@ void test_partial()
     assert(!functools::Partial(greater_than_func, 10)(7));
 }
 
+void test_optional()
+{
+    std::optional<int> value{1};
+    auto add_one{[](int x)
+                 { return x + 1; }};
+    assert(functools::transform(add_one, value) == (std::optional<int>{2}));
+    std::optional<int> empty_optional{};
+    assert(functools::transform(add_one, empty_optional) == std::nullopt);
+}
+
 int main()
 {
     test_any_all();
@@ -80,6 +90,7 @@ int main()
     test_count();
     test_sum();
     test_partial();
+    test_optional();
 
     std::vector<bool> bools{true, true, false, false};
     std::cout << strlib::to_str(functools::any(bools)) << " " << strlib::to_str(functools::all(bools)) << " for " << bools << std::endl;

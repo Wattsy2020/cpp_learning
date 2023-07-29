@@ -2,12 +2,19 @@
 #include <tuple>
 #include "set.h"
 #include "concepts.h"
+#include "functools.h"
 
+// TODO: use const generics to make something like std::get but only for tuples
 // because std::get<0, Key, Value> on its own is overloaded and doesn't realise it can take a tuple
 template <typename T1, typename T2>
 std::function<T1(std::tuple<T1, T2>)> get_first_elem_func{
     [](const std::tuple<T1, T2> &tuple)
     { return std::get<0, T1, T2>(tuple); }};
+
+template <typename T1, typename T2>
+std::function<T2(std::tuple<T1, T2>)> get_second_elem_func{
+    [](const std::tuple<T1, T2> &tuple)
+    { return std::get<1, T1, T2>(tuple); }};
 
 template <Hashable Key, typename Value>
 class Map
@@ -32,10 +39,7 @@ public:
 
     std::optional<Value> get(const Key &key) const
     {
-        std::optional<Item> result{map_set.get(key)};
-        if (result)
-            return std::make_optional(std::get<1, Key, Value>(result.value()));
-        return std::nullopt;
+        return functools::transform(get_second_elem_func<Key, Value>, map_set.get(key));
     }
 
     Value get(const Key &key, const Value &default_value) const
