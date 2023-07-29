@@ -4,17 +4,11 @@
 #include "concepts.h"
 #include "functools.h"
 
-// TODO: use const generics to make something like std::get but only for tuples
 // because std::get<0, Key, Value> on its own is overloaded and doesn't realise it can take a tuple
-template <typename T1, typename T2>
-std::function<T1(std::tuple<T1, T2>)> get_first_elem_func{
+template <size_t ElementIdx, typename T1, typename T2>
+std::function<std::tuple_element_t<ElementIdx, std::tuple<T1, T2>>(std::tuple<T1, T2>)> get_elem{
     [](const std::tuple<T1, T2> &tuple)
-    { return std::get<0, T1, T2>(tuple); }};
-
-template <typename T1, typename T2>
-std::function<T2(std::tuple<T1, T2>)> get_second_elem_func{
-    [](const std::tuple<T1, T2> &tuple)
-    { return std::get<1, T1, T2>(tuple); }};
+    { return std::get<ElementIdx, T1, T2>(tuple); }};
 
 template <Hashable Key, typename Value>
 class Map
@@ -23,7 +17,7 @@ public:
     typedef std::tuple<Key, Value> Item;
 
     constexpr Map(const size_t &size = 100000)
-        : map_set{Set<Key, Item>(get_first_elem_func<Key, Value>, size)} {};
+        : map_set{Set<Key, Item>(get_elem<0, Key, Value>, size)} {};
 
     constexpr Map(std::initializer_list<Item> items, const size_t &size = 100000) : Map(size)
     {
@@ -39,7 +33,7 @@ public:
 
     std::optional<Value> get(const Key &key) const
     {
-        return functools::transform(get_second_elem_func<Key, Value>, map_set.get(key));
+        return functools::transform(get_elem<1, Key, Value>, map_set.get(key));
     }
 
     Value get(const Key &key, const Value &default_value) const
