@@ -5,6 +5,7 @@
 #include <numeric>
 #include <functional>
 #include <concepts>
+#include <ranges>
 
 namespace functools
 {
@@ -103,6 +104,16 @@ namespace functools
     constexpr std::optional<std::invoke_result_t<Func, T>> transform(const Func &func, const std::optional<T> &item)
     {
         return (item) ? std::make_optional(func(item.value())) : std::nullopt;
+    }
+
+    // Apply a function to all items in an iterator
+    // doesn't return the result, this is suited for functions that mutate items
+    template <std::ranges::range Iter, typename Func>
+        requires std::regular_invocable<Func, std::iter_value_t<Iter> &>
+    constexpr void for_each(const Func &func, Iter &items)
+    {
+        for (std::iter_value_t<Iter> &item : items)
+            func(item);
     }
 
     // TODO: make this take any number of type arguments

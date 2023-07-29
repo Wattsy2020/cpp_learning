@@ -81,6 +81,15 @@ void test_optional()
     assert(functools::transform(add_one, empty_optional) == std::nullopt);
 }
 
+void test_for_each()
+{
+    std::vector<int> values{1, 2, 3, 4};
+    auto add_one{[](int &x)
+                 { ++x; }};
+    functools::for_each(add_one, values);
+    assert(values == (std::vector<int>{2, 3, 4, 5}));
+}
+
 int main()
 {
     test_any_all();
@@ -91,6 +100,7 @@ int main()
     test_sum();
     test_partial();
     test_optional();
+    test_for_each();
 
     std::vector<bool> bools{true, true, false, false};
     std::cout << strlib::to_str(functools::any(bools)) << " " << strlib::to_str(functools::all(bools)) << " for " << bools << std::endl;
