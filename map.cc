@@ -22,13 +22,18 @@ public:
     constexpr Map(std::initializer_list<Item> items, const size_t &size = 100000) : Map(size)
     {
         for (const Item &item : items)
-            map_set.set(std::get<0, Key, Value>(item), item);
+            set(item);
     }
 
     // set item with that key to the given item, updating it if the key already exists
     void set(const Key &key, const Value &val)
     {
         map_set.set(key, std::make_tuple(key, val));
+    }
+
+    void set(const Item &item)
+    {
+        map_set.set(std::get<0, Key, Value>(item), item);
     }
 
     std::optional<Value> get(const Key &key) const
@@ -45,8 +50,8 @@ public:
 
     void update(const Map<Key, Value> &other)
     {
-        for (const auto &[key, value] : other.items())
-            set(key, value);
+        for (const Item &item : other.items())
+            set(item);
     }
 
     std::vector<Item> items() const { return map_set.items(); }
