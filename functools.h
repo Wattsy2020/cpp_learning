@@ -106,6 +106,17 @@ namespace functools
         return (item) ? std::make_optional(func(item.value())) : std::nullopt;
     }
 
+    // Find first item matching the predicate, if there is one
+    template <typename T, typename Pred>
+        requires std::predicate<Pred, T>
+    constexpr std::optional<T> find(const Pred &pred, const std::vector<T> &vec)
+    {
+        for (const T &item : vec)
+            if (pred(item))
+                return std::make_optional(item);
+        return std::nullopt;
+    }
+
     // Apply a function to all items in an iterator
     // doesn't return the result, this is suited for functions that mutate items
     template <std::ranges::range Iter, typename Func>

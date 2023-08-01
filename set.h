@@ -78,9 +78,9 @@ public:
     // set item with that key to the given item, updating it if the key already exists
     void set(const HashType &key, const ValueType &to_insert)
     {
-        for (const ValueType &item : set_values[hash_key(key)])
-            if (key_func(item) == key)
-                remove(item);
+        std::optional<ValueType> existing_item{get(key)};
+        if (existing_item)
+            remove(existing_item.value());
         add(to_insert);
     }
 
@@ -103,10 +103,9 @@ public:
 
     std::optional<ValueType> get(const HashType &key) const
     {
-        for (const ValueType &item : set_values[hash_key(key)])
-            if (key_func(item) == key)
-                return std::make_optional(item);
-        return std::nullopt;
+        return functools::find([key, this](const ValueType &item)
+                               { return key_func(item) == key; },
+                               set_values[hash_key(key)]);
     }
 
     std::vector<ValueType> items() const
