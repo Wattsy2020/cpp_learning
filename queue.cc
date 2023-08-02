@@ -51,7 +51,6 @@ public:
     {
         // swap *this into a temporary variable, so that this.values_ptr is deallocated immediately after the move assignment finishes
         Queue(std::move(other)).swap(*this);
-        other.values_ptr = nullptr;
         return *this;
     }
 
