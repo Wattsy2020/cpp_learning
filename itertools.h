@@ -94,7 +94,7 @@ namespace itertools
         std::vector<std::tuple<typename Iter1::value_type, typename Iter2::value_type>> result{};
         while (begin1 != end1 && begin2 != end2)
         {
-            result.push_back(std::make_tuple(*begin1, *begin2));
+            result.emplace_back(*begin1, *begin2);
             ++begin1;
             ++begin2;
         }
