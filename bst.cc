@@ -29,7 +29,7 @@ public:
 
     void add(const T &item)
     {
-        const int new_node_idx{find_node(item)};
+        const size_t new_node_idx{find_node(item)};
         if (!node_exists(new_node_idx))
             add_node(new_node_idx, item);
     }
@@ -81,20 +81,20 @@ private:
     // items[2*i + 2]: right node of i
     std::vector<std::optional<T>> items;
 
-    int get_left(const int idx) const { return 2 * idx + 1; }
+    size_t get_left(const size_t idx) const { return 2 * idx + 1; }
 
-    int get_right(const int idx) const { return 2 * idx + 2; }
+    size_t get_right(const size_t idx) const { return 2 * idx + 2; }
 
-    bool node_exists(const int idx) const
+    bool node_exists(const size_t idx) const
     {
         return idx < items.size() && items[idx].has_value();
     }
 
     // find the idx of the given item in the tree
     // if item doesn't exist in the tree, then return the index where it should be placed
-    int find_node(const T &item) const
+    size_t find_node(const T &item) const
     {
-        int current_node{0};
+        size_t current_node{0};
         while (node_exists(current_node))
         {
             const T current_val{items[current_node].value()};
@@ -109,14 +109,13 @@ private:
     }
 
     // add node to the tree, increasing the vector size if necessary
-    void add_node(const int idx, const T item)
+    void add_node(const size_t idx, const T item)
     {
-        while (idx >= items.size())
-            items.push_back(std::nullopt);
+        items.resize(std::max(items.size(), idx + 1));
         items[idx] = item;
     }
 
-    void inorder_traversal(const int start_idx, std::vector<T> &output_vec) const
+    void inorder_traversal(const size_t start_idx, std::vector<T> &output_vec) const
     {
         if (!node_exists(start_idx))
             return;
@@ -206,6 +205,7 @@ int main()
 {
     test_bst_add();
     test_bst_outstream();
+    test_bst_contains();
     test_bst_inorder_traversal();
     test_bst_height();
     test_bst_size();
