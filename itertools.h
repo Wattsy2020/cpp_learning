@@ -151,15 +151,22 @@ namespace itertools
     }
 
     // Chain any number of iterators together
-    template <std::ranges::input_range Iter1, std::ranges::input_range Iter2, std::ranges::input_range... Iters>
-        requires std::same_as<typename Iter1::value_type, typename Iter2::value_type>
-    constexpr std::vector<typename Iter1::value_type> chain(const Iter1 &iter1, const Iter2 &iter2, const Iters... iters)
+    template <typename T, std::ranges::input_range Iter, std::ranges::input_range... Iters>
+        requires std::same_as<T, std::iter_value_t<Iter>>
+    void _chain_accumulator(std::vector<T> &accumulator_vec, const Iter &iter, const Iters... iters)
     {
-        std::vector<typename Iter1::value_type> combined(iter1.begin(), iter1.end());
-        for (const typename Iter2::value_type item : iter2)
-            combined.push_back(item);
+        std::copy(iter.begin(), iter.end(), std::back_inserter(accumulator_vec));
         if constexpr (sizeof...(iters) > 0)
-            return chain(combined, iters...);
+            _chain_accumulator(accumulator_vec, iters...);
+    }
+
+    // Chain any number of iterators together
+    template <std::ranges::input_range Iter, std::ranges::input_range... Iters>
+    constexpr std::vector<std::iter_value_t<Iter>> chain(const Iter &iter, const Iters... iters)
+    {
+        std::vector<std::iter_value_t<Iter>> combined(iter.begin(), iter.end());
+        if constexpr (sizeof...(iters) > 0)
+            _chain_accumulator(combined, iters...);
         return combined;
     }
 }

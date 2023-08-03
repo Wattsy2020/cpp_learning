@@ -5,6 +5,7 @@
 #include <tuple>
 #include <iostream>
 #include <exception>
+#include <chrono>
 #include "itertools.h"
 #include "testlib.h"
 
@@ -122,6 +123,18 @@ void test_chain()
             std::list<int>{5, 6},
             std::vector<int>{7, 8})};
     assert(combined3 == itertools::range(1, 9));
+
+    // benchmark
+    std::chrono::time_point start{std::chrono::system_clock::now()};
+    std::vector<int> range1{itertools::range(1, 100000)};
+    std::vector<int> range2{itertools::range(-100000, 0)};
+    std::vector<int> range3{itertools::range(-100000, 100000)};
+    for (const int i : itertools::range(1, 10))
+        itertools::chain(range1, range2, range3);
+    std::chrono::time_point end{std::chrono::system_clock::now()};
+
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "time taken: " << elapsed_seconds.count() << std::endl;
 }
 
 int main()
