@@ -19,6 +19,44 @@ namespace __node
 }
 
 template <typename T>
+class Iterator
+{
+public:
+    // typedefs are for compatibility with standard library algorithms
+    // https://medium.com/@joao_vaz/c-iterators-and-implementing-your-own-custom-one-a-primer-72f1506e5d71
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = T *;
+    using reference = T &;
+    using iterator_category = std::forward_iterator_tag;
+
+    Iterator() : current{nullptr} {}
+    Iterator(std::shared_ptr<__node::Node<T>> head) : current{head} {}
+
+    // Forward iterator needs to support equality, incrementation, and de-referencing https://www.javatpoint.com/cpp-forward-iterator
+    friend bool operator==(const Iterator<T> &iter1, const Iterator<T> &iter2) { return iter1.current == iter2.current; }
+    friend bool operator!=(const Iterator<T> &iter1, const Iterator<T> &iter2) { return !(iter1.current == iter2.current); }
+
+    reference operator*() const { return current->item; }
+
+    Iterator &operator++()
+    {
+        current = current->next_node;
+        return *this;
+    }
+
+    Iterator operator++(int)
+    {
+        Iterator temp = *this;
+        current = current->next_node;
+        return temp;
+    }
+
+private:
+    std::shared_ptr<__node::Node<T>> current;
+};
+
+template <typename T>
 class LinkedList
 {
 public:
@@ -95,6 +133,10 @@ public:
     int size() const { return length; }
 
     operator bool() { return size() > 0; }
+
+    Iterator<T> begin() const { return Iterator<T>(head->next_node); }
+
+    Iterator<T> end() const { return Iterator<T>(); }
 
 private:
     std::shared_ptr<__node::Node<T>> head; // points to 1 node before the first item
@@ -188,6 +230,21 @@ void test_linked_list_bool()
     assert(LinkedList<int>{1});
 }
 
+void test_linked_list_iterator()
+{
+    LinkedList<int> list{1, 2, 3, 4};
+    std::vector<int> extracted(list.begin(), list.end());
+    assert(extracted == (std::vector<int>{1, 2, 3, 4}));
+
+    // Check concepts
+    static_assert(std::forward_iterator<Iterator<int>>);
+
+    // Test modifying values works
+    *(++list.begin()) = 5;
+    assert(list[0] == 1);
+    assert(list[1] == 5);
+}
+
 int main()
 {
     test_node();
@@ -196,4 +253,5 @@ int main()
     test_linked_list_insert();
     test_linked_list_remove();
     test_linked_list_bool();
+    test_linked_list_iterator();
 }
