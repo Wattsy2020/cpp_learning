@@ -2,6 +2,7 @@
 #define ITERTOOLS_SLICE
 
 #include <ranges>
+#include <optional>
 #include <math.h>
 #include <assert.h>
 
@@ -19,15 +20,22 @@ namespace __private_utils
 
 namespace itertools
 {
-    // Slice an iterator from [start, end)  (i.e. not including the end index)
+    // Slice a range from [start, end)  (i.e. not including the end index)
     // Handles negative numbers and slices where end > length
-    template <std::ranges::input_range Iter>
-    constexpr Iter slice(const Iter &iter, const long &start, const long &end)
+    // Call without end to include all elements in the range after start
+    template <std::ranges::input_range Range>
+    constexpr Range slice(const Range &range, const long &start, const std::optional<long> &end = std::nullopt)
     {
-        const long length{std::distance(iter.begin(), iter.end())};
+        typename Range::const_iterator begin_iter{range.begin()};
+        typename Range::const_iterator end_iter{range.end()};
+        const long length{std::distance(begin_iter, end_iter)};
         const long start_idx{__private_utils::_bound_index(start, length)};
-        const long end_idx{__private_utils::_bound_index(end, length)};
-        return Iter(iter.begin() + start_idx, iter.begin() + end_idx);
+        if (end)
+        {
+            const long end_idx{__private_utils::_bound_index(end.value(), length)};
+            return Range(begin_iter + start_idx, begin_iter + end_idx);
+        }
+        return Range(begin_iter + start_idx, end_iter);
     }
 }
 

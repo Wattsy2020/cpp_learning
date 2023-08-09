@@ -9,7 +9,7 @@
 #include "itertools.h"
 #include "testlib.h"
 
-void test_slicing()
+void test_slice()
 {
     std::vector<int> test_vec{1, 2, 3, 4, 5};
     assert(itertools::slice(test_vec, 0, 2) == (std::vector<int>{1, 2}));
@@ -96,6 +96,13 @@ void test_init_last()
     testlib::raises<std::length_error>(call_with_empty_vector);
 }
 
+void test_head_tail()
+{
+    std::vector<int> test_vec{1, 2, 3};
+    std::tuple<int, std::vector<int>> result{itertools::head_tail(test_vec)};
+    assert(result == std::make_tuple(1, std::vector<int>{2, 3}));
+}
+
 void test_join()
 {
     std::vector<int> test_vec{1, 2, 3};
@@ -139,7 +146,7 @@ void test_chain()
 
 int main()
 {
-    test_slicing();
+    test_slice();
     test_vector_outstream();
     test_tuple_outstream();
     test_optional_outstream();
@@ -149,6 +156,7 @@ int main()
     test_pairwise();
     test_enumerate();
     test_init_last();
+    test_head_tail();
     test_join();
     test_chain();
 

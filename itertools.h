@@ -50,12 +50,10 @@ namespace itertools
             throw std::range_error(strlib::format("Invalid index {}, must be between 0 and {}", index, length));
     }
 
-    template <typename T>
-    constexpr std::vector<T> reversed(const std::vector<T> &vec)
+    template <std::ranges::bidirectional_range Range>
+    constexpr Range reversed(const Range &range)
     {
-        std::vector<T> output_vec(vec.size());
-        std::reverse_copy(vec.begin(), vec.end(), output_vec.begin());
-        return output_vec;
+        return Range(range.rbegin(), range.rend());
     }
 
     // A vector with items from [start, end) with the given step size
@@ -82,16 +80,16 @@ namespace itertools
         return result;
     }
 
-    // Zip two iterators together, returning a vector where vec[i] = tuple{iter1[i], iter2[i]}
-    // Stop at the end of the shortest iterator
-    template <std::ranges::input_range Iter1, std::ranges::input_range Iter2>
-    constexpr std::vector<std::tuple<typename Iter1::value_type, typename Iter2::value_type>> zip(const Iter1 &iter1, const Iter2 &iter2)
+    // Zip two ranges together, returning a vector where vec[i] = tuple{iter1[i], iter2[i]}
+    // Stop at the end of the shortest range
+    template <std::ranges::input_range Range1, std::ranges::input_range Range2>
+    constexpr std::vector<std::tuple<std::iter_value_t<Range1>, std::iter_value_t<Range2>>> zip(const Range1 &range1, const Range2 &range2)
     {
-        typename Iter1::const_iterator begin1{iter1.begin()};
-        const typename Iter1::const_iterator end1{iter1.end()};
-        typename Iter2::const_iterator begin2{iter2.begin()};
-        const typename Iter2::const_iterator end2{iter2.end()};
-        std::vector<std::tuple<typename Iter1::value_type, typename Iter2::value_type>> result{};
+        typename Range1::const_iterator begin1{range1.begin()};
+        const typename Range1::const_iterator end1{range1.end()};
+        typename Range2::const_iterator begin2{range2.begin()};
+        const typename Range2::const_iterator end2{range2.end()};
+        std::vector<std::tuple<std::iter_value_t<Range1>, std::iter_value_t<Range2>>> result{};
         while (begin1 != end1 && begin2 != end2)
         {
             result.emplace_back(*begin1, *begin2);
@@ -102,17 +100,18 @@ namespace itertools
     }
 
     // Return tuple of i and the vector item at i
-    template <std::ranges::input_range Iter>
-    constexpr std::vector<std::tuple<int, std::iter_value_t<Iter>>> enumerate(const Iter &iter)
+    template <std::ranges::input_range Range>
+    constexpr std::vector<std::tuple<int, std::iter_value_t<Range>>> enumerate(const Range &range)
     {
-        return itertools::zip(itertools::range(0, iter.size()), iter);
+        return itertools::zip(itertools::range(0, range.size()), range);
     }
 
     // Return vector of tuples (item, next item)
-    template <typename T>
-    constexpr std::vector<std::tuple<T, T>> pairwise(const std::vector<T> &vec)
+    template <std::ranges::input_range Range>
+    constexpr std::vector<std::tuple<std::iter_value_t<Range>, std::iter_value_t<Range>>> pairwise(const Range &range)
     {
-        return itertools::zip(vec, itertools::slice(vec, 1, vec.size()));
+
+        return itertools::zip(range, itertools::slice(range, 1));
     }
 
     // Return tuple (first part of vector, last element of vector)
@@ -128,45 +127,46 @@ namespace itertools
     // Return tuple (first element of vector, last part of vector)
     // Vector must contain at least one element
     template <typename T>
-    constexpr std::tuple<std::vector<T>, T> head_tail(const std::vector<T> &vec)
+    constexpr std::tuple<T, std::vector<T>> head_tail(const std::vector<T> &vec)
     {
         if (vec.empty())
             throw std::length_error("Vector must have at least one element");
-        return std::make_tuple(vec[0], itertools::slice(vec, 1, -1));
+        return std::make_tuple(vec[0], itertools::slice(vec, 1));
     }
 
-    // Join elements of a vector together, using the separator
-    template <typename T>
-    std::string join(const std::vector<T> &vec, const std::string &separator)
+    // Join elements of an iterator together, using the separator
+    template <std::ranges::input_range Range>
+    std::string join(const Range &range, const std::string &separator)
     {
-        if (vec.empty())
+        typename Range::const_iterator begin_iter{range.begin()};
+        const typename Range::const_iterator end_iter{range.end()};
+        if (begin_iter == end_iter)
             return "";
 
         std::ostringstream stream{};
-        auto [init, last] = itertools::init_last(vec);
-        for (const T &item : init)
-            stream << item << separator;
-        stream << last;
+        stream << *begin_iter++;
+        for (; begin_iter != end_iter; ++begin_iter)
+            stream << separator << *begin_iter;
         return stream.str();
     }
 
     // Chain any number of iterators together
-    template <typename T, std::ranges::input_range Iter, std::ranges::input_range... Iters>
-        requires std::same_as<T, std::iter_value_t<Iter>>
-    void _chain_accumulator(std::vector<T> &accumulator_vec, const Iter &iter, const Iters... iters)
+    template <typename T, std::ranges::input_range Range, std::ranges::input_range... Ranges>
+        requires std::same_as<T, std::iter_value_t<Range>>
+    void _chain_accumulator(std::vector<T> &accumulator_vec, const Range &range, const Ranges... ranges)
     {
-        std::copy(iter.begin(), iter.end(), std::back_inserter(accumulator_vec));
-        if constexpr (sizeof...(iters) > 0)
-            _chain_accumulator(accumulator_vec, iters...);
+        std::copy(range.begin(), range.end(), std::back_inserter(accumulator_vec));
+        if constexpr (sizeof...(ranges) > 0)
+            _chain_accumulator(accumulator_vec, ranges...);
     }
 
     // Chain any number of iterators together
-    template <std::ranges::input_range Iter, std::ranges::input_range... Iters>
-    constexpr std::vector<std::iter_value_t<Iter>> chain(const Iter &iter, const Iters... iters)
+    template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
+    constexpr std::vector<std::iter_value_t<Range>> chain(const Range &range, const Ranges... ranges)
     {
-        std::vector<std::iter_value_t<Iter>> combined(iter.begin(), iter.end());
-        if constexpr (sizeof...(iters) > 0)
-            _chain_accumulator(combined, iters...);
+        std::vector<std::iter_value_t<Range>> combined(range.begin(), range.end());
+        if constexpr (sizeof...(ranges) > 0)
+            _chain_accumulator(combined, ranges...);
         return combined;
     }
 }
