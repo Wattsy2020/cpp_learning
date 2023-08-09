@@ -1,6 +1,7 @@
 #include <memory>
 #include <exception>
 #include <vector>
+#include <tuple>
 #include "itertools.h"
 #include "testlib.h"
 #include <assert.h>
@@ -60,6 +61,10 @@ template <typename T>
 class LinkedList
 {
 public:
+    using value_type = T;
+    using iterator = Iterator<T>;
+    using const_iterator = Iterator<T>;
+
     LinkedList() : length{0}
     {
         head = std::make_shared<__node::Node<T>>(__node::Node<T>{});
@@ -238,11 +243,17 @@ void test_linked_list_iterator()
 
     // Check concepts
     static_assert(std::forward_iterator<Iterator<int>>);
+    static_assert(std::ranges::forward_range<LinkedList<int>>);
 
     // Test modifying values works
     *(++list.begin()) = 5;
     assert(list[0] == 1);
     assert(list[1] == 5);
+
+    // Test itertools algorithms work
+    std::vector<std::tuple<int, int>> enumerated{itertools::enumerate(list)};
+    std::vector<std::tuple<int, int>> expected_result{{0, 1}, {1, 5}, {2, 3}, {3, 4}};
+    assert(enumerated == expected_result);
 }
 
 int main()

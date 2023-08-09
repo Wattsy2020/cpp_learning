@@ -102,10 +102,10 @@ namespace itertools
     }
 
     // Return tuple of i and the vector item at i
-    template <typename T>
-    constexpr std::vector<std::tuple<int, T>> enumerate(const std::vector<T> &vec)
+    template <std::ranges::input_range Iter>
+    constexpr std::vector<std::tuple<int, std::iter_value_t<Iter>>> enumerate(const Iter &iter)
     {
-        return itertools::zip(itertools::range(0, vec.size()), vec);
+        return itertools::zip(itertools::range(0, iter.size()), iter);
     }
 
     // Return vector of tuples (item, next item)
