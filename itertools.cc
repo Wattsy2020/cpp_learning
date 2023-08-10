@@ -111,24 +111,44 @@ void test_join()
     assert(itertools::join(std::vector<int>{}, " ") == "");
 }
 
+void test_chain_class()
+{
+    static_assert(std::ranges::input_range<__itertools_utils::Chain<int>>);
+    std::vector<int> vec1{1, 2};
+    std::vector<int> vec2{3, 4, 5};
+    __itertools_utils::Chain<int> chain(vec1, vec2);
+    __itertools_utils::Chain<int>::ChainIterator iter{chain.begin()};
+    assert(*iter == 1);
+    assert(*++iter == 2);
+    assert(*++iter == 3);
+    assert(*++iter == 4);
+    assert(*++iter == 5);
+    ++iter;
+    __itertools_utils::Chain<int>::ChainIterator end{chain.end()};
+    assert(iter == end);
+    std::vector<int> extracted(chain.begin(), chain.end());
+    assert(extracted == (std::vector<int>{1, 2, 3, 4, 5}));
+}
+
 void test_chain()
 {
     std::vector<int> vec1{1, 2};
     std::vector<int> vec2{3, 4, 5};
-    std::vector<int> combined{itertools::chain(vec1, vec2)};
+    std::vector<int> combined(itertools::to_vec(itertools::chain(vec1, vec2)));
     vec1[0] = 5; // ensure we're copying, not referencing, the input vectors
     assert(combined == (std::vector<int>{1, 2, 3, 4, 5}));
 
     std::list<int> list1{6, 7, 8};
-    std::vector<int> combined2{itertools::chain(combined, list1)};
+    std::vector<int> combined2(itertools::to_vec(itertools::chain(combined, list1)));
     assert(combined2 == itertools::range(1, 9));
 
-    std::vector<int> combined3{
-        itertools::chain(
-            std::vector<int>{1, 2},
-            std::forward_list<int>{3, 4},
-            std::list<int>{5, 6},
-            std::vector<int>{7, 8})};
+    std::vector<int> combined3(
+        itertools::to_vec(
+            itertools::chain(
+                std::vector<int>{1, 2},
+                std::forward_list<int>{3, 4},
+                std::list<int>{5, 6},
+                std::vector<int>{7, 8})));
     assert(combined3 == itertools::range(1, 9));
 
     // benchmark
@@ -201,6 +221,7 @@ int main()
     test_init_last();
     test_head_tail();
     test_join();
+    test_chain_class();
     test_chain();
     test_generic_iterator();
     test_generic_range();

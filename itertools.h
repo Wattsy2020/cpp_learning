@@ -148,6 +148,8 @@ namespace __itertools_utils
     class GenericRange
     {
     public:
+        typedef T value_type;
+
         template <std::ranges::input_range Range>
             requires std::same_as<std::iter_value_t<Range>, T>
         GenericRange(const Range &range) : begin_iter{GenericIterator<T>(range.begin())},
@@ -162,23 +164,79 @@ namespace __itertools_utils
         GenericIterator<T> end_iter;
     };
 
-    /*
     // Class that holds several ranges and provides an input iterator to go over all of them
-    template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
+    template <typename T>
     class Chain
     {
     public:
-        Chain(Range range, Ranges... ranges) : range{range}, next_chain{std::nullopt}
+        typedef T value_type;
+
+        template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
+            requires std::same_as<std::iter_value_t<Range>, T>
+        Chain(const Range &range, const Ranges &...ranges) : range{GenericRange<T>(range)}, next_chain{nullptr}
         {
             if constexpr (sizeof...(ranges) > 0)
-                next_chain = Chain(ranges...);
+                next_chain = std::make_shared<Chain<T>>(Chain(ranges...));
+        }
+
+        struct ChainIterator
+        {
+        public:
+            typedef T value_type;
+            typedef const value_type *pointer;
+            typedef const value_type &reference;
+            typedef std::ptrdiff_t difference_type;
+            typedef std::input_iterator_tag iterator_category;
+
+            ChainIterator() : current_chain{nullptr}, current_iter{nullptr}, current_end{nullptr} {}
+
+            ChainIterator(const Chain<T> &chain) : current_chain{std::make_shared<Chain<T>>(chain)},
+                                                   current_iter{chain.range.begin()},
+                                                   current_end{chain.range.end()} {}
+
+            // For initialising the end iterator
+            ChainIterator(const Chain<T> &chain, const GenericIterator<T> &iter) : current_chain{std::make_shared<Chain<T>>(chain)},
+                                                                                   current_iter{iter},
+                                                                                   current_end{iter} {}
+
+            reference operator*() const { return *current_iter; }
+            ChainIterator &operator++()
+            {
+                ++current_iter;
+                if (current_iter == current_end && current_chain->next_chain)
+                {
+                    current_chain = current_chain->next_chain;
+                    current_iter = current_chain->range.begin();
+                    current_end = current_chain->range.end();
+                }
+                return *this;
+            }
+            ChainIterator operator++(int)
+            {
+                ChainIterator temp = *this;
+                ++*this;
+                return temp;
+            }
+            friend bool operator==(const ChainIterator &iter1, const ChainIterator &iter2) { return iter1.current_iter == iter2.current_iter; }
+            friend bool operator!=(const ChainIterator &iter1, const ChainIterator &iter2) { return !(iter1 == iter2); }
+
+        private:
+            std::shared_ptr<Chain<T>> current_chain;
+            GenericIterator<T> current_iter;
+            GenericIterator<T> current_end;
+        };
+
+        ChainIterator begin() const { return ChainIterator(*this); }
+
+        ChainIterator end() const
+        {
+            return (next_chain) ? next_chain->end() : ChainIterator(*this, range.end());
         }
 
     private:
-        Range range;
-        std::optional<Chain<Ranges...>> next_chain;
+        GenericRange<T> range;
+        std::shared_ptr<Chain<T>> next_chain;
     };
-    */
 }
 
 namespace itertools
@@ -289,23 +347,17 @@ namespace itertools
         return stream.str();
     }
 
-    // Chain any number of iterators together
+    // Chain any number of ranges together
     template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
-    void _chain_accumulator(std::vector<std::iter_value_t<Range>> &accumulator_vec, const Range &range, const Ranges... ranges)
+    constexpr __itertools_utils::Chain<std::iter_value_t<Range>> chain(const Range &range, const Ranges... ranges)
     {
-        std::copy(range.begin(), range.end(), std::back_inserter(accumulator_vec));
-        if constexpr (sizeof...(ranges) > 0)
-            _chain_accumulator(accumulator_vec, ranges...);
+        return __itertools_utils::Chain<std::iter_value_t<Range>>(range, ranges...);
     }
 
-    // Chain any number of iterators together
-    template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
-    constexpr std::vector<std::iter_value_t<Range>> chain(const Range &range, const Ranges... ranges)
+    template <std::ranges::input_range Range>
+    constexpr std::vector<std::iter_value_t<Range>> to_vec(const Range &range)
     {
-        std::vector<std::iter_value_t<Range>> combined(range.begin(), range.end());
-        if constexpr (sizeof...(ranges) > 0)
-            _chain_accumulator(combined, ranges...);
-        return combined;
+        return std::vector<std::iter_value_t<Range>>(range.begin(), range.end());
     }
 }
 
