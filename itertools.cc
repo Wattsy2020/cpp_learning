@@ -174,6 +174,19 @@ void test_generic_iterator()
     static_assert(std::input_iterator<__itertools_utils::GenericIterator<int>>);
 }
 
+void test_generic_range()
+{
+    std::vector<int> vec{1, 2, 3, 4};
+    __itertools_utils::GenericRange<int> range(vec);
+    assert(std::distance(range.begin(), range.end()) == 4);
+    assert(std::distance(range.begin(), range.end()) == 4);
+    for (const int item : range)
+        assert(item >= 1);
+    std::vector<int> extracted(range.begin(), range.end());
+    assert(extracted == vec);
+    static_assert(std::ranges::input_range<__itertools_utils::GenericRange<int>>);
+}
+
 int main()
 {
     test_slice();
@@ -190,7 +203,7 @@ int main()
     test_join();
     test_chain();
     test_generic_iterator();
-    // test_generic_range();
+    test_generic_range();
 
     // test if the templating works for strings as well
     std::vector<int> int_vec{1, 2, 3, 4, 5};

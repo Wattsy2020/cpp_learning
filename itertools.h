@@ -143,6 +143,25 @@ namespace __itertools_utils
         void swap(GenericIterator &other) noexcept { std::swap(this->iter_ptr, other.iter_ptr); }
     };
 
+    // Type erasure class that holds an Range and provides an input iterator over it
+    template <typename T>
+    class GenericRange
+    {
+    public:
+        template <std::ranges::input_range Range>
+            requires std::same_as<std::iter_value_t<Range>, T>
+        GenericRange(const Range &range) : begin_iter{GenericIterator<T>(range.begin())},
+                                           end_iter{GenericIterator<T>(range.end())} {};
+
+        GenericIterator<T> begin() const { return begin_iter; }
+
+        GenericIterator<T> end() const { return end_iter; }
+
+    private:
+        GenericIterator<T> begin_iter;
+        GenericIterator<T> end_iter;
+    };
+
     /*
     // Class that holds several ranges and provides an input iterator to go over all of them
     template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
