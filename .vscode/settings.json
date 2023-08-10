@@ -70,6 +70,7 @@
         "iterator": "cpp",
         "ranges": "cpp",
         "list": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "memory_resource": "cpp"
     }
 }

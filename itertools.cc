@@ -144,6 +144,28 @@ void test_chain()
     std::cout << "time taken: " << elapsed_seconds.count() << std::endl;
 }
 
+void test_generic_iterator()
+{
+    std::vector<int> vec{1, 2, 3, 4};
+    __itertools_utils::GenericIterator<int> begin{vec.begin()};
+    __itertools_utils::GenericIterator<int> end{vec.end()};
+
+    assert(*begin == 1);
+    ++begin;
+    assert(*begin == 2);
+    assert(begin == begin);
+    assert(begin != end);
+    ++begin;
+    assert(*begin++ == 4);
+    ++begin;
+    assert(begin == end);
+
+    // Check that it can be used by other functions
+    __itertools_utils::GenericIterator<int> copy(begin);
+    assert(std::distance(begin, end) == 0);
+    static_assert(std::input_iterator<__itertools_utils::GenericIterator<int>>);
+}
+
 int main()
 {
     test_slice();
@@ -159,6 +181,7 @@ int main()
     test_head_tail();
     test_join();
     test_chain();
+    test_generic_iterator();
 
     // test if the templating works for strings as well
     std::vector<int> int_vec{1, 2, 3, 4, 5};

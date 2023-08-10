@@ -42,6 +42,104 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
     return os;
 }
 
+namespace __itertools_utils
+{
+    // Type erasure class that holds any iterator, satisfying an input_iterator
+    // type erasure reference: https://www.modernescpp.com/index.php/type-erasure/
+    template <typename T>
+    class GenericIterator
+    {
+    public:
+        typedef T value_type;
+        typedef const value_type *pointer;
+        typedef const value_type &reference;
+        typedef std::ptrdiff_t difference_type;
+        typedef std::input_iterator_tag iterator_category;
+
+        GenericIterator() : iter_ptr{nullptr} {};
+        // note: should have concepts like this: template <std::input_iterator Iter>  requires std::same_as<std::iter_value_t<Iter>, T>
+        // but this doesn't work, because then determining whether GenericIterator itself satisfies std::input_iterator causes a recursion
+        template <typename Iter>
+        GenericIterator(Iter iter) : iter_ptr{std::make_shared<IteratorModel<Iter>>(IteratorModel<Iter>(iter))} {};
+
+        // The abstract interface for an iterator
+        struct IteratorConcept
+        {
+            virtual ~IteratorConcept(){};
+            virtual reference operator*() const = 0;
+            virtual IteratorConcept &operator++() = 0;
+            virtual bool operator==(const IteratorConcept &) const = 0;
+            virtual bool operator!=(const IteratorConcept &) const = 0;
+        };
+
+        // Take any iterator, and make a class for it that inherits from the abstract interface
+        template <typename Iter>
+        struct IteratorModel : IteratorConcept
+        {
+        public:
+            IteratorModel(const Iter iter) : iter{iter} {}
+            reference operator*() const override { return *iter; }
+            IteratorModel &operator++() override
+            {
+                ++iter;
+                return *this;
+            }
+            virtual bool operator==(const IteratorConcept &other) const override
+            {
+                auto other_ptr{dynamic_cast<const IteratorModel *>(&other)};
+                return other_ptr != 0 && iter == other_ptr->iter;
+            }
+            virtual bool operator!=(const IteratorConcept &other) const override { return !(*this == other); }
+
+        private:
+            Iter iter;
+        };
+
+        // Finally, using the pointer to the abstract IteratorModel, we can implement the iterator methods
+        reference operator*() const { return *(*iter_ptr); }
+        GenericIterator<T> &operator++()
+        {
+            ++(*iter_ptr);
+            return *this;
+        }
+        GenericIterator<T> operator++(int)
+        {
+            GenericIterator<T> temp = *this;
+            ++*this;
+            return temp;
+        }
+        friend bool operator==(const GenericIterator &iter1, const GenericIterator &iter2) { return *iter1.iter_ptr == *iter2.iter_ptr; }
+        friend bool operator!=(const GenericIterator &iter1, const GenericIterator &iter2) { return !(iter1 == iter2); }
+
+    private:
+        std::shared_ptr<IteratorConcept> iter_ptr;
+    };
+
+    /*
+    template <std::ranges::input_range Range>
+            requires std::same_as<std::iter_value_t<Range>, T>
+        GenericIterator(Range range)
+            : begin_ptr{std::make_shared<IteratorModel<typename Range::iterator>>(IteratorModel<typename Range::iterator>(range.begin()))},
+              end_ptr{std::make_shared<IteratorModel<typename Range::iterator>>(IteratorModel<typename Range::iterator>(range.end()))} {};
+
+    // Class that holds several ranges and provides an input iterator to go over all of them
+    template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
+    class Chain
+    {
+    public:
+        Chain(Range range, Ranges... ranges) : range{range}, next_chain{std::nullopt}
+        {
+            if constexpr (sizeof...(ranges) > 0)
+                next_chain = Chain(ranges...);
+        }
+
+    private:
+        Range range;
+        std::optional<Chain<Ranges...>> next_chain;
+    };
+    */
+}
+
 namespace itertools
 {
     constexpr void validate_index(const int &index, const int &length)
@@ -151,9 +249,8 @@ namespace itertools
     }
 
     // Chain any number of iterators together
-    template <typename T, std::ranges::input_range Range, std::ranges::input_range... Ranges>
-        requires std::same_as<T, std::iter_value_t<Range>>
-    void _chain_accumulator(std::vector<T> &accumulator_vec, const Range &range, const Ranges... ranges)
+    template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
+    void _chain_accumulator(std::vector<std::iter_value_t<Range>> &accumulator_vec, const Range &range, const Ranges... ranges)
     {
         std::copy(range.begin(), range.end(), std::back_inserter(accumulator_vec));
         if constexpr (sizeof...(ranges) > 0)
