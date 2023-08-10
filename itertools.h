@@ -57,10 +57,33 @@ namespace __itertools_utils
         typedef std::input_iterator_tag iterator_category;
 
         GenericIterator() : iter_ptr{nullptr} {};
+
+        // Implement copy constructors that deep copy the iterator, so we can call .begin() multiple times
+        // Also implement move constructors to follow the rule of 5
+        GenericIterator(const GenericIterator &other) : iter_ptr{other.clone()} {};
+
+        GenericIterator &operator=(const GenericIterator &other)
+        {
+            GenericIterator(other).swap(*this);
+            return *this;
+        }
+
+        GenericIterator(GenericIterator &&other)
+        {
+            other.swap(*this);
+            other.iter_ptr = nullptr;
+        }
+
+        GenericIterator &operator=(GenericIterator &&other)
+        {
+            GenericIterator(std::move(other)).swap(*this);
+            return *this;
+        }
+
         // note: should have concepts like this: template <std::input_iterator Iter>  requires std::same_as<std::iter_value_t<Iter>, T>
         // but this doesn't work, because then determining whether GenericIterator itself satisfies std::input_iterator causes a recursion
         template <typename Iter>
-        GenericIterator(Iter iter) : iter_ptr{std::make_shared<IteratorModel<Iter>>(IteratorModel<Iter>(iter))} {};
+        GenericIterator(const Iter &iter) : iter_ptr{std::make_unique<IteratorModel<Iter>>(IteratorModel<Iter>(iter))} {};
 
         // The abstract interface for an iterator
         struct IteratorConcept
@@ -68,6 +91,7 @@ namespace __itertools_utils
             virtual ~IteratorConcept(){};
             virtual reference operator*() const = 0;
             virtual IteratorConcept &operator++() = 0;
+            virtual std::unique_ptr<IteratorConcept> clone() const = 0;
             virtual bool operator==(const IteratorConcept &) const = 0;
             virtual bool operator!=(const IteratorConcept &) const = 0;
         };
@@ -84,6 +108,7 @@ namespace __itertools_utils
                 ++iter;
                 return *this;
             }
+            std::unique_ptr<IteratorConcept> clone() const override { return std::make_unique<IteratorModel<Iter>>(*this); };
             virtual bool operator==(const IteratorConcept &other) const override
             {
                 auto other_ptr{dynamic_cast<const IteratorModel *>(&other)};
@@ -104,24 +129,21 @@ namespace __itertools_utils
         }
         GenericIterator<T> operator++(int)
         {
-            GenericIterator<T> temp = *this;
+            GenericIterator<T> temp(*this);
             ++*this;
             return temp;
         }
+        std::unique_ptr<IteratorConcept> clone() const { return iter_ptr->clone(); }
         friend bool operator==(const GenericIterator &iter1, const GenericIterator &iter2) { return *iter1.iter_ptr == *iter2.iter_ptr; }
         friend bool operator!=(const GenericIterator &iter1, const GenericIterator &iter2) { return !(iter1 == iter2); }
 
     private:
-        std::shared_ptr<IteratorConcept> iter_ptr;
+        std::unique_ptr<IteratorConcept> iter_ptr;
+
+        void swap(GenericIterator &other) noexcept { std::swap(this->iter_ptr, other.iter_ptr); }
     };
 
     /*
-    template <std::ranges::input_range Range>
-            requires std::same_as<std::iter_value_t<Range>, T>
-        GenericIterator(Range range)
-            : begin_ptr{std::make_shared<IteratorModel<typename Range::iterator>>(IteratorModel<typename Range::iterator>(range.begin()))},
-              end_ptr{std::make_shared<IteratorModel<typename Range::iterator>>(IteratorModel<typename Range::iterator>(range.end()))} {};
-
     // Class that holds several ranges and provides an input iterator to go over all of them
     template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
     class Chain

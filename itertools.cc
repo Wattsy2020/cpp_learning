@@ -147,21 +147,29 @@ void test_chain()
 void test_generic_iterator()
 {
     std::vector<int> vec{1, 2, 3, 4};
-    __itertools_utils::GenericIterator<int> begin{vec.begin()};
+    auto vec_begin{vec.begin()};
+    __itertools_utils::GenericIterator<int> begin{vec_begin};
     __itertools_utils::GenericIterator<int> end{vec.end()};
 
     assert(*begin == 1);
     ++begin;
     assert(*begin == 2);
+    assert(*vec_begin == 1); // ensure iterators are copied into GenericIterator
     assert(begin == begin);
     assert(begin != end);
     ++begin;
-    assert(*begin++ == 4);
+    assert(*begin++ == 3);
     ++begin;
     assert(begin == end);
 
+    // Check copies are independent iterators
+    __itertools_utils::GenericIterator<int> orig{vec.begin()};
+    __itertools_utils::GenericIterator<int> copy(orig);
+    ++orig;
+    assert(*orig == 2);
+    assert(*copy == 1);
+
     // Check that it can be used by other functions
-    __itertools_utils::GenericIterator<int> copy(begin);
     assert(std::distance(begin, end) == 0);
     static_assert(std::input_iterator<__itertools_utils::GenericIterator<int>>);
 }
@@ -182,6 +190,7 @@ int main()
     test_join();
     test_chain();
     test_generic_iterator();
+    // test_generic_range();
 
     // test if the templating works for strings as well
     std::vector<int> int_vec{1, 2, 3, 4, 5};
