@@ -169,16 +169,6 @@ namespace __itertools_utils
     class Chain
     {
     public:
-        typedef T value_type;
-
-        template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
-            requires std::same_as<std::iter_value_t<Range>, T>
-        Chain(const Range &range, const Ranges &...ranges) : range{GenericRange<T>(range)}, next_chain{nullptr}
-        {
-            if constexpr (sizeof...(ranges) > 0)
-                next_chain = std::make_shared<Chain<T>>(Chain(ranges...));
-        }
-
         struct ChainIterator
         {
         public:
@@ -226,12 +216,25 @@ namespace __itertools_utils
             GenericIterator<T> current_end;
         };
 
-        ChainIterator begin() const { return ChainIterator(*this); }
+        typedef T value_type;
+        typedef ChainIterator iterator;
+        typedef const ChainIterator const_iterator;
 
-        ChainIterator end() const
+        template <std::ranges::input_range Range, std::ranges::input_range... Ranges>
+            requires std::same_as<std::iter_value_t<Range>, T>
+        Chain(const Range &range, const Ranges &...ranges) : range{GenericRange<T>(range)}, next_chain{nullptr}
+        {
+            if constexpr (sizeof...(ranges) > 0)
+                next_chain = std::make_shared<Chain<T>>(Chain(ranges...));
+        }
+
+        iterator begin() const { return ChainIterator(*this); }
+        iterator end() const
         {
             return (next_chain) ? next_chain->end() : ChainIterator(*this, range.end());
         }
+        const_iterator cbegin() const { return begin(); }
+        const_iterator cend() const { return end(); }
 
     private:
         GenericRange<T> range;

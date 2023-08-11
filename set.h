@@ -16,6 +16,9 @@ template <Hashable HashType, typename ValueType = HashType>
 class Set
 {
 public:
+    typedef ValueType value_type;
+    typedef const ValueType *const_iterator;
+
     constexpr Set(
         const std::function<HashType(ValueType)> key_func = std::identity(),
         const size_t &size = 100000)
@@ -116,9 +119,9 @@ public:
     // TODO: make these const_iterators, not pointers
     // note: must return constant pointers, to prevent returned items from being mutated,
     // and causing inconsistency between set_values and all_items
-    const ValueType *begin() const { return &all_items[0]; }
+    const_iterator begin() const { return &all_items[0]; }
 
-    const ValueType *end() const { return &all_items[size()]; }
+    const_iterator end() const { return &all_items[size()]; }
 
     operator bool() const { return !all_items.empty(); }
 
