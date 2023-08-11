@@ -244,6 +244,15 @@ namespace __itertools_utils
 
 namespace itertools
 {
+    template <typename Range>
+    using range_t = std::ranges::range_value_t<Range>;
+
+    template <std::ranges::input_range Range>
+    constexpr std::vector<range_t<Range>> to_vec(const Range &range)
+    {
+        return std::vector<range_t<Range>>(range.begin(), range.end());
+    }
+
     constexpr void validate_index(const int &index, const int &length)
     {
         if (index < 0 || index >= length)
@@ -283,13 +292,13 @@ namespace itertools
     // Zip two ranges together, returning a vector where vec[i] = tuple{iter1[i], iter2[i]}
     // Stop at the end of the shortest range
     template <std::ranges::input_range Range1, std::ranges::input_range Range2>
-    constexpr std::vector<std::tuple<std::iter_value_t<Range1>, std::iter_value_t<Range2>>> zip(const Range1 &range1, const Range2 &range2)
+    constexpr std::vector<std::tuple<range_t<Range1>, range_t<Range2>>> zip(const Range1 &range1, const Range2 &range2)
     {
-        typename Range1::const_iterator begin1{range1.begin()};
-        const typename Range1::const_iterator end1{range1.end()};
-        typename Range2::const_iterator begin2{range2.begin()};
-        const typename Range2::const_iterator end2{range2.end()};
-        std::vector<std::tuple<std::iter_value_t<Range1>, std::iter_value_t<Range2>>> result{};
+        auto begin1{range1.begin()};
+        const auto end1{range1.end()};
+        auto begin2{range2.begin()};
+        const auto end2{range2.end()};
+        std::vector<std::tuple<range_t<Range1>, range_t<Range2>>> result{};
         while (begin1 != end1 && begin2 != end2)
         {
             result.emplace_back(*begin1, *begin2);
@@ -301,14 +310,14 @@ namespace itertools
 
     // Return tuple of i and the vector item at i
     template <std::ranges::input_range Range>
-    constexpr std::vector<std::tuple<int, std::iter_value_t<Range>>> enumerate(const Range &range)
+    constexpr std::vector<std::tuple<int, range_t<Range>>> enumerate(const Range &range)
     {
         return itertools::zip(itertools::range(0, range.size()), range);
     }
 
     // Return vector of tuples (item, next item)
     template <std::ranges::input_range Range>
-    constexpr std::vector<std::tuple<std::iter_value_t<Range>, std::iter_value_t<Range>>> pairwise(const Range &range)
+    constexpr std::vector<std::tuple<range_t<Range>, range_t<Range>>> pairwise(const Range &range)
     {
 
         return itertools::zip(range, itertools::slice(range, 1));
@@ -321,7 +330,7 @@ namespace itertools
     {
         if (vec.empty())
             throw std::length_error("Vector must have at least one element");
-        return std::make_tuple(itertools::slice(vec, 0, -1), vec[vec.size() - 1]);
+        return std::make_tuple(to_vec(itertools::slice(vec, 0, -1)), vec[vec.size() - 1]);
     }
 
     // Return tuple (first element of vector, last part of vector)
@@ -331,7 +340,7 @@ namespace itertools
     {
         if (vec.empty())
             throw std::length_error("Vector must have at least one element");
-        return std::make_tuple(vec[0], itertools::slice(vec, 1));
+        return std::make_tuple(vec[0], to_vec(itertools::slice(vec, 1)));
     }
 
     // Join elements of an iterator together, using the separator
@@ -355,12 +364,6 @@ namespace itertools
     constexpr __itertools_utils::Chain<std::iter_value_t<Range>> chain(const Range &range, const Ranges... ranges)
     {
         return __itertools_utils::Chain<std::iter_value_t<Range>>(range, ranges...);
-    }
-
-    template <std::ranges::input_range Range>
-    constexpr std::vector<std::iter_value_t<Range>> to_vec(const Range &range)
-    {
-        return std::vector<std::iter_value_t<Range>>(range.begin(), range.end());
     }
 }
 

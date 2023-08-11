@@ -30,7 +30,8 @@ namespace strlib
             {
                 result << arg;
                 // add remaining args, skipping over closing bracket
-                std::string remaining{itertools::slice(str, i + 2, length)};
+                auto sliced{itertools::slice(str, i + 2, length)};
+                std::string remaining(sliced.begin(), sliced.end());
                 if constexpr (sizeof...(args) > 0)
                     result << strlib::format(remaining, args...);
                 else

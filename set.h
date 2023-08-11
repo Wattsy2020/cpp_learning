@@ -34,7 +34,7 @@ public:
         const std::function<HashType(ValueType)> key_func = std::identity(),
         size_t const &size = 100000) : Set(key_func, size)
     {
-        add(items.cbegin(), items.cend());
+        add(items.begin(), items.end());
     }
 
     constexpr Set(

@@ -12,13 +12,13 @@
 void test_slice()
 {
     std::vector<int> test_vec{1, 2, 3, 4, 5};
-    assert(itertools::slice(test_vec, 0, 2) == (std::vector<int>{1, 2}));
-    assert(itertools::slice(test_vec, 2, 3) == (std::vector<int>{3}));
-    assert(itertools::slice(test_vec, 0, 0) == (std::vector<int>{}));
-    assert(itertools::slice(test_vec, 0, -1) == (std::vector<int>{1, 2, 3, 4}));
-    assert(itertools::slice(test_vec, 0, -2) == (std::vector<int>{1, 2, 3}));
-    assert(itertools::slice(test_vec, -3, -1) == (std::vector<int>{3, 4}));
-    assert(itertools::slice(test_vec, -1000, 1000) == test_vec);
+    assert(itertools::to_vec(itertools::slice(test_vec, 0, 2)) == (std::vector<int>{1, 2}));
+    assert(itertools::to_vec(itertools::slice(test_vec, 2, 3)) == (std::vector<int>{3}));
+    assert(itertools::to_vec(itertools::slice(test_vec, 0, 0)) == (std::vector<int>{}));
+    assert(itertools::to_vec(itertools::slice(test_vec, 0, -1)) == (std::vector<int>{1, 2, 3, 4}));
+    assert(itertools::to_vec(itertools::slice(test_vec, 0, -2)) == (std::vector<int>{1, 2, 3}));
+    assert(itertools::to_vec(itertools::slice(test_vec, -3, -1)) == (std::vector<int>{3, 4}));
+    assert(itertools::to_vec(itertools::slice(test_vec, -1000, 1000)) == test_vec);
 }
 
 void test_vector_outstream()
@@ -51,8 +51,8 @@ void test_zip()
     std::vector<std::tuple<int, int>> expected_result{std::make_tuple(1, 5), std::make_tuple(2, 3), std::make_tuple(3, 1)};
     assert(itertools::zip(test_vec, equal_vec) == expected_result);
 
-    std::vector<int> short_vec{itertools::slice(equal_vec, 0, 2)};
-    assert(itertools::zip(test_vec, short_vec) == itertools::slice(expected_result, 0, 2));
+    std::vector<int> short_vec{itertools::to_vec(itertools::slice(equal_vec, 0, 2))};
+    assert(itertools::zip(test_vec, short_vec) == itertools::to_vec(itertools::slice(expected_result, 0, 2)));
 
     std::vector<int> long_vec{5, 3, 1, -1};
     assert(itertools::zip(test_vec, long_vec) == expected_result);
@@ -230,7 +230,7 @@ int main()
     std::vector<int> int_vec{1, 2, 3, 4, 5};
     std::vector<std::string> str_vec{"this", "is", "a", "string", "vector", "cool"};
     auto sliced{itertools::slice(str_vec, -4, -1)};
-    std::cout << sliced << std::endl;
+    std::cout << itertools::to_vec(sliced) << std::endl;
     std::cout << itertools::zip(sliced, int_vec) << std::endl;
     std::cout << itertools::pairwise(str_vec) << std::endl;
     std::cout << itertools::enumerate(str_vec) << std::endl;

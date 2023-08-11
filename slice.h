@@ -24,18 +24,14 @@ namespace itertools
     // Handles negative numbers and slices where end > length
     // Call without end to include all elements in the range after start
     template <std::ranges::input_range Range>
-    constexpr Range slice(const Range &range, const long &start, const std::optional<long> &end = std::nullopt)
+    constexpr std::ranges::view auto slice(const Range &range, const long &start, const std::optional<long> &end = std::nullopt)
     {
-        typename Range::const_iterator begin_iter{range.begin()};
-        typename Range::const_iterator end_iter{range.end()};
+        auto begin_iter{range.begin()};
+        auto end_iter{range.end()};
         const long length{std::distance(begin_iter, end_iter)};
         const long start_idx{__private_utils::_bound_index(start, length)};
-        if (end)
-        {
-            const long end_idx{__private_utils::_bound_index(end.value(), length)};
-            return Range(begin_iter + start_idx, begin_iter + end_idx);
-        }
-        return Range(begin_iter + start_idx, end_iter);
+        const long end_idx{(end) ? __private_utils::_bound_index(end.value(), length) : length};
+        return range | std::views::drop(start_idx) | std::views::take(end_idx - start_idx);
     }
 }
 
