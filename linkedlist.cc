@@ -90,7 +90,7 @@ public:
         ++length;
     }
 
-    // insert item anywhere in the list, O(n)
+    // insert item anywhere in the list, so that becomes the item at index, and moves the previous item up. O(n)
     void insert(const int index, const T item)
     {
         itertools::validate_index(index, length);
@@ -204,6 +204,10 @@ void test_linked_list_insert()
     list.insert(2, 5);
     std::vector<int> result2{list.items()};
     assert(result2 == (std::vector<int>{10, 1, 5, 2, 3, 4}));
+
+    // ensure insert can't insert at the last part of the list (add should be used instead)
+    testlib::raises([&list]()
+                    { list.insert(6, 10); });
 }
 
 void test_linked_list_remove()

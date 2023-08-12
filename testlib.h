@@ -21,7 +21,7 @@ namespace testutils
 
 namespace testlib
 {
-    template <typename EXCEPTION>
+    template <typename EXCEPTION = std::exception>
     void raises(const std::function<void()> &callback, std::optional<std::string> expected_message = std::nullopt)
     {
         try
