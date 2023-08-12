@@ -83,7 +83,7 @@ namespace __itertools_utils
         // note: should have concepts like this: template <std::input_iterator Iter>  requires std::same_as<std::iter_value_t<Iter>, T>
         // but this doesn't work, because then determining whether GenericIterator itself satisfies std::input_iterator causes a recursion
         template <typename Iter>
-        GenericIterator(const Iter &iter) : iter_ptr{std::make_unique<IteratorModel<Iter>>(IteratorModel<Iter>(iter))} {};
+        GenericIterator(const Iter &iter) : iter_ptr{std::make_unique<IteratorModel<Iter>>(iter)} {};
 
         // The abstract interface for an iterator
         struct IteratorConcept
@@ -225,7 +225,7 @@ namespace __itertools_utils
         Chain(const Range &range, const Ranges &...ranges) : range{GenericRange<T>(range)}, next_chain{nullptr}
         {
             if constexpr (sizeof...(ranges) > 0)
-                next_chain = std::make_shared<Chain<T>>(Chain(ranges...));
+                next_chain = std::make_shared<Chain<T>>(ranges...);
         }
 
         iterator begin() const { return ChainIterator(*this); }

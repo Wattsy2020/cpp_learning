@@ -67,7 +67,7 @@ public:
 
     LinkedList() : length{0}
     {
-        head = std::make_shared<__node::Node<T>>(__node::Node<T>{});
+        head = std::make_shared<__node::Node<T>>();
         last = head;
     }
 
@@ -82,7 +82,7 @@ public:
     {
         // note: need to update head if this is the first item
         // then update last to point to the new item
-        auto new_node = std::make_shared<__node::Node<T>>(item);
+        auto new_node{std::make_shared<__node::Node<T>>(item)};
         if (!head->next_node)
             head->next_node = new_node;
         last->next_node = new_node;
@@ -94,10 +94,10 @@ public:
     void insert(const int index, const T item)
     {
         itertools::validate_index(index, length);
-        __node::Node<T> &prev_node = *get_node(index - 1);
-        __node::Node<T> new_node{__node::Node<T>(item)};
-        new_node.next_node = prev_node.next_node;
-        prev_node.next_node = std::make_shared<__node::Node<T>>(new_node);
+        std::shared_ptr<__node::Node<T>> prev_node{get_node(index - 1)};
+        std::shared_ptr<__node::Node<T>> new_node{std::make_shared<__node::Node<T>>(item)};
+        new_node->next_node = prev_node->next_node;
+        prev_node->next_node = new_node;
         ++length;
     }
 
@@ -105,8 +105,8 @@ public:
     void remove(const int index)
     {
         itertools::validate_index(index, length);
-        std::shared_ptr<__node::Node<T>> prev_node = get_node(index - 1);
-        std::shared_ptr<__node::Node<T>> following_node = prev_node->next_node->next_node;
+        std::shared_ptr<__node::Node<T>> prev_node{get_node(index - 1)};
+        std::shared_ptr<__node::Node<T>> following_node{prev_node->next_node->next_node};
         if (!following_node)
             last = prev_node; // removing the last item, so update it to point to prev_node
         prev_node->next_node = following_node;
