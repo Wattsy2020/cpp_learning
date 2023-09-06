@@ -21,18 +21,19 @@ public:
 
     constexpr Set(
         const std::function<HashType(ValueType)> key_func = std::identity(),
-        const size_t &size = 100000)
+        const size_t &size = 8)
         : hasher{std::hash<HashType>()},
           key_func{key_func},
           set_values{std::vector<std::vector<ValueType>>(size)},
-          all_items{std::vector<ValueType>{}} {};
+          num_items{0},
+          vec_capacity{size} {};
 
     template <std::ranges::input_range Iter>
         requires std::same_as<std::ranges::range_value_t<Iter>, ValueType>
     constexpr Set(
         const Iter &items,
         const std::function<HashType(ValueType)> key_func = std::identity(),
-        size_t const &size = 100000) : Set(key_func, size)
+        size_t const &size = 8) : Set(key_func, size)
     {
         add(items.begin(), items.end());
     }
@@ -40,25 +41,19 @@ public:
     constexpr Set(
         std::initializer_list<ValueType> items,
         const std::function<HashType(ValueType)> key_func = std::identity(),
-        size_t const &size = 100000) : Set(key_func, size)
+        size_t const &size = 8) : Set(key_func, size)
     {
         add(items.begin(), items.end());
     };
 
-    template <std::input_iterator Iter>
-        requires std::same_as<typename std::iterator_traits<Iter>::value_type, ValueType>
-    constexpr Set(
-        const Iter &begin,
-        const Iter &end,
-        const std::function<HashType(ValueType)> key_func = std::identity(),
-        size_t const &size = 100000) : Set(key_func, size)
+    size_t size() const
     {
-        add(begin, end);
+        return num_items;
     }
 
-    int size() const
+    size_t capacity() const
     {
-        return all_items.size();
+        return vec_capacity;
     }
 
     bool contains(const ValueType &item) const
@@ -75,7 +70,9 @@ public:
         if (contains(item))
             return;
         set_values[hash(item)].push_back(item);
-        all_items.push_back(item);
+        ++num_items;
+        if (num_items == vec_capacity)
+            expand_capacity();
     }
 
     // set item with that key to the given item, updating it if the key already exists
@@ -95,15 +92,15 @@ public:
             add(*begin);
     }
 
-    // note this is O(n), if removing multiple items then use set::difference instead, which is also O(n)
     void remove(const ValueType &item)
     {
         if (!contains(item))
             return;
         std::erase(set_values[hash(item)], item);
-        std::erase(all_items, item);
+        --num_items;
     }
 
+    // get the full value of the item with this key
     std::optional<ValueType> get(const HashType &key) const
     {
         return functools::find([key, this](const ValueType &item)
@@ -111,32 +108,47 @@ public:
                                set_values[hash_key(key)]);
     }
 
+    // retrieve all items in the set. this is an O(n) operation
+    // insertion order is not preserved
     std::vector<ValueType> items() const
     {
-        return all_items;
+        std::vector<ValueType> result_items{};
+        for (const std::vector<ValueType> &hash_values : set_values)
+            result_items.insert(result_items.end(), hash_values.begin(), hash_values.end());
+        return result_items;
     }
 
-    // TODO: make these const_iterators, not pointers
-    // note: must return constant pointers, to prevent returned items from being mutated,
-    // and causing inconsistency between set_values and all_items
-    const_iterator begin() const { return &all_items[0]; }
-
-    const_iterator end() const { return &all_items[size()]; }
-
-    operator bool() const { return !all_items.empty(); }
+    operator bool() const
+    {
+        return num_items > 0;
+    }
 
 private:
     const std::hash<HashType> hasher;
     const std::function<HashType(ValueType)> key_func;
-    std::vector<std::vector<ValueType>> set_values; // vector where vector[hash] is a vector containing all elemetns with that hash
-    std::vector<ValueType> all_items;
+    std::vector<std::vector<ValueType>> set_values; // vector where vector[hash] is a vector containing all elements with that hash
+    size_t num_items;
+    size_t vec_capacity;
+
+    // doubles the vec_capacity of set_values, to reduce hash conflicts when the vec_capacity is reached
+    void expand_capacity()
+    {
+        vec_capacity = vec_capacity * 2;
+        std::vector<ValueType> all_items{items()};
+        set_values.clear();
+        set_values.resize(vec_capacity);
+        add(all_items.begin(), all_items.end());
+    }
 
     size_t hash_key(const HashType &item) const
     {
-        return hasher(item) % set_values.size();
+        return hasher(item) % vec_capacity;
     };
 
-    size_t hash(const ValueType &item) const { return hash_key(key_func(item)); }
+    size_t hash(const ValueType &item) const
+    {
+        return hash_key(key_func(item));
+    }
 };
 
 namespace set
