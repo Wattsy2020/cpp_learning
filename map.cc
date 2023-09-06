@@ -16,10 +16,10 @@ class Map
 public:
     typedef std::tuple<Key, Value> Item;
 
-    constexpr Map(const size_t &size = 100000)
+    constexpr Map(const size_t &size = set::HASHSET_INITIAL_SIZE)
         : map_set{Set<Key, Item>(get_elem<0, Key, Value>, size)} {};
 
-    constexpr Map(std::initializer_list<Item> items, const size_t &size = 100000) : Map(size)
+    constexpr Map(std::initializer_list<Item> items, const size_t &size = set::HASHSET_INITIAL_SIZE) : Map(size)
     {
         for (const Item &item : items)
             set(item);
@@ -46,7 +46,10 @@ public:
         return get(key).value_or(default_value);
     }
 
-    std::optional<Value> operator[](const Key &key) const { return get(key); }
+    std::optional<Value> operator[](const Key &key) const
+    {
+        return get(key);
+    }
 
     void update(const Map<Key, Value> &other)
     {
@@ -54,7 +57,20 @@ public:
             set(item);
     }
 
-    std::vector<Item> items() const { return map_set.items(); }
+    std::vector<Item> items() const
+    {
+        return map_set.items();
+    }
+
+    size_t size() const
+    {
+        return map_set.size();
+    }
+
+    operator bool() const
+    {
+        return size() > 0;
+    }
 
     friend bool operator==(const Map<Key, Value> &left, const Map<Key, Value> &right) { return left.map_set == right.map_set; }
 
@@ -79,12 +95,17 @@ void test_tuple()
 void test_map()
 {
     Map<int, std::string> test_map{};
+    assert(test_map.size() == 0);
+    assert(!test_map);
+
     test_map.set(0, "hello there!");
     test_map.set(1, "general kenobi!");
     assert(test_map.get(0) == "hello there!");
     assert(test_map.get(0) == "hello there!");
     assert(test_map.get(1) == "general kenobi!");
     assert(test_map.get(2) == std::nullopt);
+    assert(test_map);
+    assert(test_map.size() == 2);
 
     assert(test_map.get(0, "default") == "hello there!");
     assert(test_map.get(0, "default") == "hello there!");

@@ -12,6 +12,11 @@
 #include "functools.h"
 #include "concepts.h"
 
+namespace set
+{
+    constexpr int HASHSET_INITIAL_SIZE{8};
+}
+
 template <Hashable HashType, typename ValueType = HashType>
 class Set
 {
@@ -21,7 +26,7 @@ public:
 
     constexpr Set(
         const std::function<HashType(ValueType)> key_func = std::identity(),
-        const size_t &size = 8)
+        const size_t &size = set::HASHSET_INITIAL_SIZE)
         : hasher{std::hash<HashType>()},
           key_func{key_func},
           set_values{std::vector<std::vector<ValueType>>(size)},
@@ -33,7 +38,7 @@ public:
     constexpr Set(
         const Iter &items,
         const std::function<HashType(ValueType)> key_func = std::identity(),
-        size_t const &size = 8) : Set(key_func, size)
+        size_t const &size = set::HASHSET_INITIAL_SIZE) : Set(key_func, size)
     {
         add(items.begin(), items.end());
     }
@@ -41,7 +46,7 @@ public:
     constexpr Set(
         std::initializer_list<ValueType> items,
         const std::function<HashType(ValueType)> key_func = std::identity(),
-        size_t const &size = 8) : Set(key_func, size)
+        size_t const &size = set::HASHSET_INITIAL_SIZE) : Set(key_func, size)
     {
         add(items.begin(), items.end());
     };
