@@ -1,5 +1,6 @@
 #include <memory>
 #include <assert.h>
+#include <optional>
 #include "itertools.h"
 #include "testlib.h"
 
@@ -44,7 +45,7 @@ public:
         // note: need to update head if this is the first item
         // then update last to point to the new item
         std::shared_ptr<__node::DoubleNode<T>> new_node{std::make_shared<__node::DoubleNode<T>>(item)};
-        if (!head->next_node)
+        if (length == 0)
             head->next_node = new_node;
         last->next_node = new_node;
         new_node->prev_node = last;
@@ -81,7 +82,15 @@ public:
         --length;
     }
 
-    T back() const { return last->item; }
+    std::optional<T> front() const
+    {
+        return (length > 0) ? std::make_optional<T>(head->next_node->item) : std::nullopt;
+    }
+
+    std::optional<T> back() const
+    {
+        return (length > 0) ? std::make_optional<T>(last->item) : std::nullopt;
+    }
 
     // get item, note this is O(n) and inefficient
     T &operator[](const int index)
@@ -238,6 +247,17 @@ void test_linked_list_reverse()
     assert(list.items() == (std::vector<int>{4, 3, 10, 2, 1}));
 }
 
+void test_linked_list_ends()
+{
+    LinkedList<int> list{1, 2, 3, 4};
+    assert(list.front() == std::make_optional<int>(1));
+    assert(list.back() == std::make_optional<int>(4));
+
+    LinkedList<int> empty{};
+    assert(empty.front() == std::nullopt);
+    assert(empty.back() == std::nullopt);
+}
+
 int main()
 {
     test_linked_list_add();
@@ -246,4 +266,5 @@ int main()
     test_linked_list_remove();
     test_linked_list_bool();
     test_linked_list_reverse();
+    test_linked_list_ends();
 }
