@@ -53,6 +53,24 @@ public:
         ++length;
     }
 
+    void add_left(const T item)
+    {
+        std::shared_ptr<__node::DoubleNode<T>> new_node{std::make_shared<__node::DoubleNode<T>>(item)};
+        if (length == 0)
+        {
+            last = new_node;
+            head->next_node = new_node;
+        }
+        else
+        {
+            new_node->next_node = head->next_node;
+            head->next_node->prev_node = new_node;
+            head->next_node = new_node;
+        }
+        new_node->prev_node = head;
+        ++length;
+    }
+
     // insert item anywhere in the list, so that becomes the item at index, and moves the previous item up. O(n)
     void insert(const int index, const T item)
     {
@@ -258,6 +276,16 @@ void test_linked_list_ends()
     assert(empty.back() == std::nullopt);
 }
 
+void test_linked_list_end_manipulation()
+{
+    LinkedList<int> list{};
+    list.add_left(1);
+    list.add(2);
+    list.add_left(0);
+    std::vector<int> result{list.items()};
+    assert(result == (std::vector<int>{0, 1, 2}));
+}
+
 int main()
 {
     test_linked_list_add();
@@ -267,4 +295,5 @@ int main()
     test_linked_list_bool();
     test_linked_list_reverse();
     test_linked_list_ends();
+    test_linked_list_end_manipulation();
 }
