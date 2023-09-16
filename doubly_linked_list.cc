@@ -71,6 +71,28 @@ public:
         ++length;
     }
 
+    // remove and return the last item in the list. If the list is empty returns nullopt
+    std::optional<T> pop()
+    {
+        if (length == 0)
+            return std::nullopt;
+        T last_value{last->item};
+        last = last->prev_node.lock();
+        last->next_node = nullptr;
+        return last_value;
+    }
+
+    std::optional<T> pop_left()
+    {
+        if (length == 0)
+            return std::nullopt;
+        T first_value{head->next_node->item};
+        auto new_first_node{head->next_node->next_node};
+        new_first_node->prev_node = head;
+        head->next_node = new_first_node;
+        return first_value;
+    }
+
     // insert item anywhere in the list, so that becomes the item at index, and moves the previous item up. O(n)
     void insert(const int index, const T item)
     {
@@ -147,10 +169,7 @@ public:
 
         // swap head and tail
         std::swap(head, last);
-        // TODO: can replace the below with pop
-        last = last->prev_node.lock(); // after swapping, tail will point to one past the last element, fix that
-        last->next_node = nullptr;
-
+        pop(); // after swapping, tail will point to one past the last element, so remove that
         auto new_head = std::make_shared<__node::DoubleNode<T>>();
         new_head->next_node = head;
         head->prev_node = new_head;
@@ -284,6 +303,16 @@ void test_linked_list_end_manipulation()
     list.add_left(0);
     std::vector<int> result{list.items()};
     assert(result == (std::vector<int>{0, 1, 2}));
+
+    list.pop_left();
+    list.pop();
+    list.add_left(-10);
+    list.add(10);
+    list.pop();
+    list.add(15);
+    list.add_left(-1);
+    std::vector<int> result2{list.items()};
+    assert(result2 == (std::vector<int>{-1, -10, 1, 15}));
 }
 
 int main()
