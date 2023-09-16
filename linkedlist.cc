@@ -12,8 +12,7 @@ namespace __node
     class Node
     {
     public:
-        Node() : item{}, next_node{std::shared_ptr<Node<T>>{nullptr}} {}
-        Node(const T item) : item{item}, next_node{std::shared_ptr<Node<T>>{nullptr}} {}
+        Node(const T item = T{}) : item{item}, next_node{std::shared_ptr<Node<T>>{nullptr}} {}
         T item;
         std::shared_ptr<Node<T>> next_node;
     };
@@ -127,7 +126,7 @@ public:
     {
         std::vector<T> result{};
         std::shared_ptr<__node::Node<T>> current = head->next_node;
-        for (int i = 0; i < length; ++i)
+        while (current)
         {
             result.push_back(current->item);
             current = current->next_node;
