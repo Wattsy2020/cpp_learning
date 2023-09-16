@@ -103,6 +103,33 @@ public:
         return result;
     }
 
+    void reverse()
+    {
+        if (length <= 1)
+            return;
+
+        std::shared_ptr<__node::DoubleNode<T>> current{last};
+        std::shared_ptr<__node::DoubleNode<T>> next_node;
+        while (current)
+        {
+            next_node = current->next_node;
+            current->next_node = current->prev_node.lock();
+            current->prev_node = next_node;
+            current = current->next_node;
+        }
+
+        // swap head and tail
+        std::swap(head, last);
+        // TODO: can replace the below with pop
+        last = last->prev_node.lock(); // after swapping, tail will point to one past the last element, fix that
+        last->next_node = nullptr;
+
+        auto new_head = std::make_shared<__node::DoubleNode<T>>();
+        new_head->next_node = head;
+        head->prev_node = new_head;
+        head = new_head;
+    }
+
     int size() const { return length; }
 
     operator bool() { return length > 0; }
@@ -194,6 +221,23 @@ void test_linked_list_bool()
     assert(LinkedList<int>{1});
 }
 
+void test_linked_list_reverse()
+{
+    LinkedList<int> list{1, 2, 3, 4};
+    list.reverse();
+    std::vector<int> result{list.items()};
+    assert(result == (std::vector<int>{4, 3, 2, 1}));
+
+    list.reverse();
+    assert(list.items() == (std::vector<int>{1, 2, 3, 4}));
+
+    list.insert(2, 10);
+    assert(list.items() == (std::vector<int>{1, 2, 10, 3, 4}));
+
+    list.reverse();
+    assert(list.items() == (std::vector<int>{4, 3, 10, 2, 1}));
+}
+
 int main()
 {
     test_linked_list_add();
@@ -201,4 +245,5 @@ int main()
     test_linked_list_insert();
     test_linked_list_remove();
     test_linked_list_bool();
+    test_linked_list_reverse();
 }
