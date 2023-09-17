@@ -15,6 +15,15 @@ void test_printable()
     static_assert(strlib::Printable<int>);
     static_assert(strlib::Printable<bool>);
     static_assert(!strlib::Printable<test_struct>);
+    static_assert(!strlib::Printable<std::optional<std::vector<int>>>); // TODO: see if we can get nested printing working
+}
+
+void test_outstream()
+{
+    ctest::assert_outstream(std::vector<int>{1, 2, 3, 4, 5}, "[ 1 2 3 4 5 ]");
+    ctest::assert_outstream(std::make_tuple<int, int>(1, 2), "(1, 2)");
+    ctest::assert_outstream(std::optional<int>{}, "None");
+    ctest::assert_outstream(std::optional<int>{2}, "2");
 }
 
 void test_format()
@@ -40,6 +49,7 @@ void test_format()
 int main()
 {
     test_printable();
+    test_outstream();
     test_format();
     std::cout << strlib::format("int: {} bool: {} string: {}", 1, true, "yes") << std::endl;
 }

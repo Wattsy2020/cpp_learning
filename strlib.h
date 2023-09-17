@@ -7,34 +7,6 @@
 #include <iostream>
 #include "slice.h"
 
-template <typename T1, typename T2>
-std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
-{
-    auto [first, second] = tuple;
-    os << "(" << first << ", " << second << ")";
-    return os;
-}
-
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const std::optional<T> &optional)
-{
-    if (optional)
-        os << optional.value();
-    else
-        os << "None";
-    return os;
-}
-
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
-{
-    os << "[ ";
-    for (const T v : vect)
-        os << v << " ";
-    os << "]";
-    return os;
-}
-
 namespace strlib
 {
     std::string to_str(bool b)
@@ -74,6 +46,34 @@ namespace strlib
         }
         return result.str();
     }
+}
+
+template <strlib::Printable T1, strlib::Printable T2>
+std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple)
+{
+    auto [first, second] = tuple;
+    os << "(" << first << ", " << second << ")";
+    return os;
+}
+
+template <strlib::Printable T>
+std::ostream &operator<<(std::ostream &os, const std::optional<T> &optional)
+{
+    if (optional)
+        os << optional.value();
+    else
+        os << "None";
+    return os;
+}
+
+template <strlib::Printable T>
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
+{
+    os << "[ ";
+    for (const T v : vect)
+        os << v << " ";
+    os << "]";
+    return os;
 }
 
 #endif
