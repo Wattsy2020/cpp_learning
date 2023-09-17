@@ -37,7 +37,10 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vect)
 
 namespace strlib
 {
-    std::string to_str(bool);
+    std::string to_str(bool b)
+    {
+        return (b) ? "true" : "false";
+    }
 
     template <typename T>
     concept Printable = requires(std::ostream &os, T var) {
