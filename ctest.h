@@ -6,6 +6,7 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include <concepts>
 #include "strlib.h"
 
 namespace testutils
@@ -42,6 +43,14 @@ namespace ctest
     {
         const std::string oustream_result{testutils::get_outstream(value)};
         assert(oustream_result == expected_result);
+    }
+
+    template <typename T1, typename T2>
+        requires std::equality_comparable_with<T1, T2>
+    void assert_equal(const T1 &left, const T2 &right)
+    {
+        if (left != right)
+            throw std::logic_error(strlib::format("Error, operands are not equal\nLeft={}\nRight={}", left, right));
     }
 }
 
