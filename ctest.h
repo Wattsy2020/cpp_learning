@@ -49,8 +49,12 @@ namespace ctest
         requires std::equality_comparable_with<T1, T2>
     void assert_equal(const T1 &left, const T2 &right)
     {
-        if (left != right)
-            throw std::logic_error(strlib::format("Error, operands are not equal\nLeft={}\nRight={}", left, right));
+        if (left == right)
+            return;
+        if constexpr (strlib::Printable<T1> && strlib::Printable<T2>)
+            throw std::logic_error(strlib::format("Error: operands are not equal\nLeft={}\nRight={}", left, right));
+        else
+            throw std::logic_error("Error: operands are not equal");
     }
 }
 
