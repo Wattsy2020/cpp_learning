@@ -19,7 +19,7 @@ namespace testutils
     }
 }
 
-namespace testlib
+namespace ctest
 {
     template <typename EXCEPTION = std::exception>
     void raises(const std::function<void()> &callback, std::optional<std::string> expected_message = std::nullopt)

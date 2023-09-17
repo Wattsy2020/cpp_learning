@@ -1,7 +1,7 @@
 #include <ranges>
 #include <assert.h>
 #include "set.h"
-#include "testlib.h"
+#include "ctest.h"
 
 template <typename HashType, typename ValueType>
 constexpr std::vector<ValueType> get_sorted_items(const Set<HashType, ValueType> &set)
@@ -57,8 +57,8 @@ void test_set_items()
 
 void test_set_outstream()
 {
-    testlib::assert_outstream(Set<int>{}, "{ }");
-    testlib::assert_outstream(Set<int>{1, 1004}, "{ 1 1004 }");
+    ctest::assert_outstream(Set<int>{}, "{ }");
+    ctest::assert_outstream(Set<int>{1, 1004}, "{ 1 1004 }");
 }
 
 void test_vector_constructor()

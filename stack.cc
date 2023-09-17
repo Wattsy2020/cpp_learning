@@ -4,7 +4,7 @@
 #include <exception>
 #include <functional>
 #include "itertools.h"
-#include "testlib.h"
+#include "ctest.h"
 
 template <typename T>
 class Stack
@@ -58,13 +58,13 @@ void test_stack()
     assert(stack.pop() == 2);
     assert(stack.pop() == 1);
     assert(stack.empty());
-    testlib::raises<std::length_error>(std::bind(&Stack<int>::pop, stack));
+    ctest::raises<std::length_error>(std::bind(&Stack<int>::pop, stack));
 }
 
 void test_stack_ostream()
 {
     Stack<int> stack{1, 2, 3, 4, 5};
-    testlib::assert_outstream(stack, "[ 1 2 3 4 5 ]");
+    ctest::assert_outstream(stack, "[ 1 2 3 4 5 ]");
 }
 
 void test_stack_bool()

@@ -7,7 +7,7 @@
 #include <exception>
 #include <chrono>
 #include "itertools.h"
-#include "testlib.h"
+#include "ctest.h"
 
 void test_slice()
 {
@@ -23,18 +23,18 @@ void test_slice()
 
 void test_vector_outstream()
 {
-    testlib::assert_outstream(std::vector<int>{1, 2, 3, 4, 5}, "[ 1 2 3 4 5 ]");
+    ctest::assert_outstream(std::vector<int>{1, 2, 3, 4, 5}, "[ 1 2 3 4 5 ]");
 }
 
 void test_tuple_outstream()
 {
-    testlib::assert_outstream(std::make_tuple<int, int>(1, 2), "(1, 2)");
+    ctest::assert_outstream(std::make_tuple<int, int>(1, 2), "(1, 2)");
 }
 
 void test_optional_outstream()
 {
-    testlib::assert_outstream(std::optional<int>{}, "None");
-    testlib::assert_outstream(std::optional<int>{2}, "2");
+    ctest::assert_outstream(std::optional<int>{}, "None");
+    ctest::assert_outstream(std::optional<int>{2}, "2");
 }
 
 void test_reversed()
@@ -68,7 +68,7 @@ void test_range()
 
     std::function<void()> invalid_range{[]()
                                         { itertools::range(1, 10, 0); }};
-    testlib::raises<std::invalid_argument>(invalid_range);
+    ctest::raises<std::invalid_argument>(invalid_range);
 }
 
 void test_pairwise()
@@ -93,7 +93,7 @@ void test_init_last()
 
     std::function<void()> call_with_empty_vector{[]()
                                                  { itertools::init_last(std::vector<int>{}); }};
-    testlib::raises<std::length_error>(call_with_empty_vector);
+    ctest::raises<std::length_error>(call_with_empty_vector);
 }
 
 void test_head_tail()

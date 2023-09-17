@@ -7,7 +7,7 @@
 #include <cmath>
 #include <functional>
 #include "itertools.h"
-#include "testlib.h"
+#include "ctest.h"
 
 template <std::totally_ordered T>
 class BinaryTree
@@ -155,7 +155,7 @@ void test_bst_outstream()
     bst.add(0);
     bst.add(3);
     bst.add(1);
-    testlib::assert_outstream(bst, "[ 2 0 5 None 1 3 ]");
+    ctest::assert_outstream(bst, "[ 2 0 5 None 1 3 ]");
 }
 
 void test_bst_contains()

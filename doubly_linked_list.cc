@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <optional>
 #include "itertools.h"
-#include "testlib.h"
+#include "ctest.h"
 
 namespace __node
 {
@@ -217,7 +217,7 @@ void test_linked_list_access()
     assert(list[2] == 3);
     assert(list[3] == 4);
     assert(list.items() == (std::vector<int>{1, 2, 3, 4}));
-    testlib::raises<std::range_error>([&list]()
+    ctest::raises<std::range_error>([&list]()
                                       { list[-1]; },
                                       "Invalid index -1, must be between 0 and 4");
 }
@@ -234,7 +234,7 @@ void test_linked_list_insert()
     assert(result2 == (std::vector<int>{10, 1, 5, 2, 3, 4}));
 
     // ensure insert can't insert at the last part of the list (add should be used instead)
-    testlib::raises([&list]()
+    ctest::raises([&list]()
                     { list.insert(6, 10); });
 }
 
