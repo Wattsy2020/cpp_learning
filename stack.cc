@@ -47,16 +47,16 @@ private:
 void test_stack()
 {
     Stack<int> stack{1, 2, 3, 4, 5};
-    assert(stack.pop() == 5);
-    assert(stack.pop() == 4);
+    ctest::assert_equal(stack.pop(), 5);
+    ctest::assert_equal(stack.pop(), 4);
     stack.add(10);
     stack.add(7);
     int result = stack.pop();
-    assert(result == 7);
-    assert(stack.pop() == 10);
-    assert(stack.pop() == 3);
-    assert(stack.pop() == 2);
-    assert(stack.pop() == 1);
+    ctest::assert_equal(result, 7);
+    ctest::assert_equal(stack.pop(), 10);
+    ctest::assert_equal(stack.pop(), 3);
+    ctest::assert_equal(stack.pop(), 2);
+    ctest::assert_equal(stack.pop(), 1);
     assert(stack.empty());
     ctest::raises<std::length_error>(std::bind(&Stack<int>::pop, stack));
 }

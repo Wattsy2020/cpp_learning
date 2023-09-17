@@ -5,6 +5,7 @@
 #include <sstream>
 #include "itertools.h"
 #include "strlib.h"
+#include "ctest.h"
 
 bool is_sorted(const std::vector<int> &nums)
 {
@@ -66,15 +67,15 @@ void test_quicksort()
 {
     std::vector<int> vect3{4, 3, 5, 4};
     quicksort(vect3);
-    assert(vect3 == (std::vector<int>{3, 4, 4, 5}));
+    ctest::assert_equal(vect3, std::vector<int>{3, 4, 4, 5});
 
     std::vector<int> vect4{10, -3, 100, 2, 0, 40, -1};
     quicksort(vect4);
-    assert(vect4 == (std::vector<int>{-3, -1, 0, 2, 10, 40, 100}));
+    ctest::assert_equal(vect4, std::vector<int>{-3, -1, 0, 2, 10, 40, 100});
 
     std::vector<int> vect5{4, 4};
     quicksort(vect5);
-    assert(vect5 == (std::vector<int>{4, 4}));
+    ctest::assert_equal(vect5, std::vector<int>{4, 4});
 }
 
 int main()

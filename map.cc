@@ -3,6 +3,7 @@
 #include "set.h"
 #include "concepts.h"
 #include "functools.h"
+#include "ctest.h"
 
 // because std::get<0, Key, Value> on its own is overloaded and doesn't realise it can take a tuple
 template <size_t ElementIdx, typename T1, typename T2>
@@ -84,48 +85,48 @@ void test_tuple()
 {
     std::tuple<int, bool> test_tuple{10, false};
     int result{std::get<0, int, bool>(test_tuple)};
-    assert(result == 10);
+    ctest::assert_equal(result, 10);
 
     std::function<int(std::tuple<int, bool>)> test{
         [](std::tuple<int, bool> tuple_input)
         { return std::get<0, int, bool>(tuple_input); }};
-    assert(test(std::make_tuple(10, true)) == 10);
+    ctest::assert_equal(test(std::make_tuple(10, true)), 10);
 }
 
 void test_map()
 {
     Map<int, std::string> test_map{};
-    assert(test_map.size() == 0);
+    ctest::assert_equal(test_map.size(), 0);
     assert(!test_map);
 
     test_map.set(0, "hello there!");
     test_map.set(1, "general kenobi!");
-    assert(test_map.get(0) == "hello there!");
-    assert(test_map.get(0) == "hello there!");
-    assert(test_map.get(1) == "general kenobi!");
-    assert(test_map.get(2) == std::nullopt);
+    ctest::assert_equal(test_map.get(0), "hello there!");
+    ctest::assert_equal(test_map.get(0), "hello there!");
+    ctest::assert_equal(test_map.get(1), "general kenobi!");
+    assert(!test_map.get(2));
     assert(test_map);
-    assert(test_map.size() == 2);
+    ctest::assert_equal(test_map.size(), 2);
 
-    assert(test_map.get(0, "default") == "hello there!");
-    assert(test_map.get(0, "default") == "hello there!");
-    assert(test_map.get(1, "default") == "general kenobi!");
-    assert(test_map.get(2, "default") == "default");
+    ctest::assert_equal(test_map.get(0, "default"), "hello there!");
+    ctest::assert_equal(test_map.get(0, "default"), "hello there!");
+    ctest::assert_equal(test_map.get(1, "default"), "general kenobi!");
+    ctest::assert_equal(test_map.get(2, "default"), "default");
 
-    assert(test_map[0] == "hello there!");
-    assert(test_map[0] == "hello there!");
-    assert(test_map[1] == "general kenobi!");
-    assert(test_map[2] == std::nullopt);
+    ctest::assert_equal(test_map[0], "hello there!");
+    ctest::assert_equal(test_map[0], "hello there!");
+    ctest::assert_equal(test_map[1], "general kenobi!");
+    assert(!test_map[2]);
 
     test_map.set(0, "your move");
-    assert(test_map[0] == "your move");
+    ctest::assert_equal(test_map[0], "your move");
 
     Map<int, std::string> to_update{};
     to_update.set(2, "you are a bold one!");
     to_update.update(test_map);
-    assert(to_update[0] == "your move");
-    assert(to_update[1] == "general kenobi!");
-    assert(to_update[2] == "you are a bold one!");
+    ctest::assert_equal(to_update[0], "your move");
+    ctest::assert_equal(to_update[1], "general kenobi!");
+    ctest::assert_equal(to_update[2], "you are a bold one!");
 }
 
 void test_map_initializer_list()
@@ -134,7 +135,7 @@ void test_map_initializer_list()
     Map<int, std::string> map2{};
     map2.set(1, "there");
     map2.set(0, "hello");
-    assert(map1 == map2);
+    ctest::assert_equal(map1, map2);
 }
 
 int main()

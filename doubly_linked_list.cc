@@ -199,7 +199,7 @@ void test_linked_list_add()
 {
     LinkedList<int> list;
     list.add(1);
-    ctest::assert_equal(list.back(), 2);
+    ctest::assert_equal(list.back(), 1);
     ctest::assert_equal(list.size(), 1);
     ctest::assert_equal(list.items(), std::vector<int>{1});
     list.add(5);
@@ -226,12 +226,10 @@ void test_linked_list_insert()
 {
     LinkedList<int> list{1, 2, 3, 4};
     list.insert(0, 10);
-    std::vector<int> result{list.items()};
-    ctest::assert_equal(result, std::vector<int>{10, 1, 2, 3, 4});
+    ctest::assert_equal(list.items(), std::vector<int>{10, 1, 2, 3, 4});
 
     list.insert(2, 5);
-    std::vector<int> result2{list.items()};
-    ctest::assert_equal(result2, std::vector<int>{10, 1, 5, 2, 3, 4});
+    ctest::assert_equal(list.items(), std::vector<int>{10, 1, 5, 2, 3, 4});
 
     // ensure insert can't insert at the last part of the list (add should be used instead)
     ctest::raises([&list]()
@@ -242,18 +240,15 @@ void test_linked_list_remove()
 {
     LinkedList<int> list{1, 2, 3, 4};
     list.remove(0);
-    std::vector<int> result{list.items()};
-    ctest::assert_equal(result, std::vector<int>{2, 3, 4});
+    ctest::assert_equal(list.items(), std::vector<int>{2, 3, 4});
 
     list.remove(1);
-    std::vector<int> result2{list.items()};
-    ctest::assert_equal(result2, std::vector<int>{2, 4});
+    ctest::assert_equal(list.items(), std::vector<int>{2, 4});
 
     // ensure head is updated for one item list
     LinkedList<int> one_item{1};
     one_item.remove(0);
-    std::vector<int> result3{one_item.items()};
-    ctest::assert_equal(result3, std::vector<int>{});
+    ctest::assert_equal(one_item.items(), std::vector<int>{});
 
     // ensure tail is updated when removing this last one
     LinkedList<int> list2{1, 2, 3, 4};
@@ -271,8 +266,7 @@ void test_linked_list_reverse()
 {
     LinkedList<int> list{1, 2, 3, 4};
     list.reverse();
-    std::vector<int> result{list.items()};
-    ctest::assert_equal(result, std::vector<int>{4, 3, 2, 1});
+    ctest::assert_equal(list.items(), std::vector<int>{4, 3, 2, 1});
 
     list.reverse();
     ctest::assert_equal(list.items(), std::vector<int>{1, 2, 3, 4});
@@ -301,8 +295,7 @@ void test_linked_list_end_manipulation()
     list.add_left(1);
     list.add(2);
     list.add_left(0);
-    std::vector<int> result{list.items()};
-    ctest::assert_equal(result, std::vector<int>{0, 1, 2});
+    ctest::assert_equal(list.items(), std::vector<int>{0, 1, 2});
 
     list.pop_left();
     list.pop();
@@ -311,8 +304,7 @@ void test_linked_list_end_manipulation()
     list.pop();
     list.add(15);
     list.add_left(-1);
-    std::vector<int> result2{list.items()};
-    ctest::assert_equal(result2, std::vector<int>{-1, -10, 1, 15});
+    ctest::assert_equal(list.items(), std::vector<int>{-1, -10, 1, 15});
 }
 
 int main()

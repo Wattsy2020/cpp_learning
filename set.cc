@@ -22,7 +22,7 @@ void test_set_add()
     // test duplicates aren't added twice
     set.add(1);
     assert(set.contains(1));
-    assert(get_sorted_items(set) == std::vector<int>{1});
+    ctest::assert_equal(get_sorted_items(set), std::vector<int>{1});
 }
 
 void test_set_remove()
@@ -30,7 +30,7 @@ void test_set_remove()
     Set<int> set{1, 2, 100001};
     set.remove(1);
     std::vector<int> set_items{get_sorted_items(set)};
-    assert(set_items == (std::vector<int>{2, 100001}));
+    ctest::assert_equal(set_items, std::vector<int>{2, 100001});
     set.remove(3); // ensure no error is thrown
 }
 
@@ -49,10 +49,10 @@ void test_set_contains()
 void test_set_items()
 {
     Set<int> set{};
-    assert(get_sorted_items(set) == std::vector<int>{});
+    ctest::assert_equal(get_sorted_items(set), std::vector<int>{});
     set.add(1);
     set.add(1004);
-    assert(get_sorted_items(set) == (std::vector<int>{1, 1004}));
+    ctest::assert_equal(get_sorted_items(set), std::vector<int>{1, 1004});
 }
 
 void test_set_outstream()
@@ -65,13 +65,13 @@ void test_vector_constructor()
 {
     std::vector<int> input_vec{1, 10004};
     Set<int> set(input_vec);
-    assert(get_sorted_items(set) == input_vec);
+    ctest::assert_equal(get_sorted_items(set), input_vec);
 }
 
 void test_initialiser_list_constructor()
 {
     Set<int> set{1, 10004};
-    assert(get_sorted_items(set) == (std::vector<int>{1, 10004}));
+    ctest::assert_equal(get_sorted_items(set), std::vector<int>{1, 10004});
 }
 
 void test_capacity_expansion()
@@ -88,7 +88,7 @@ void test_set_union()
     Set<int> set1{1, 2, 3};
     Set<int> set2{2, 3, 4};
     Set<int> unioned_set{set::set_union(set1, set2)};
-    assert(get_sorted_items(unioned_set) == (std::vector<int>{1, 2, 3, 4}));
+    ctest::assert_equal(get_sorted_items(unioned_set), std::vector<int>{1, 2, 3, 4});
 }
 
 void test_set_intersection()
@@ -96,7 +96,7 @@ void test_set_intersection()
     Set<int> set1{-1, 0, 1, 2, 3};
     Set<int> set2{2, 3, 4, 5};
     Set<int> result{set::intersection(set1, set2)};
-    assert(get_sorted_items(result) == (std::vector<int>{2, 3}));
+    ctest::assert_equal(get_sorted_items(result), std::vector<int>{2, 3});
 }
 
 void test_set_difference()
@@ -105,10 +105,10 @@ void test_set_difference()
     Set<int> set2{2, 3, 4, 5};
 
     Set<int> diff1{set::difference(set1, set2)};
-    assert(get_sorted_items(diff1) == (std::vector<int>{-1, 0, 1}));
+    ctest::assert_equal(get_sorted_items(diff1), std::vector<int>{-1, 0, 1});
 
     Set<int> diff2{set::difference(set2, set1)};
-    assert(get_sorted_items(diff2) == (std::vector<int>{4, 5}));
+    ctest::assert_equal(get_sorted_items(diff2), std::vector<int>{4, 5});
 }
 
 void test_set_is_subset()
@@ -136,7 +136,7 @@ void test_set_equality()
     assert(set1 != set2);
     assert(set1 != set3);
     assert(set2 != set3);
-    assert(set1 == set4);
+    ctest::assert_equal(set1, set4);
 }
 
 void test_set_key_func()
@@ -152,13 +152,13 @@ void test_set_key_func()
     assert(set.contains(vec1));
     assert(set.contains(vec2));
     assert(!set.contains(std::vector<int>{1}));
-    assert(set.size() == 2);
-    assert(get_sorted_items(set) == (std::vector{vec2, vec1}));
+    ctest::assert_equal(set.size(), 2);
+    ctest::assert_equal(get_sorted_items(set), std::vector{vec2, vec1});
 
-    assert(set.get(5) == vec1);
+    ctest::assert_equal(set.get(5), vec1);
     std::vector<int> new_vec{1, 2, 3, 5};
     set.set(5, new_vec);
-    assert(set.get(5) == new_vec);
+    ctest::assert_equal(set.get(5), new_vec);
 }
 
 int main()

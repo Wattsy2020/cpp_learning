@@ -4,7 +4,19 @@ from pathlib import Path
 
 
 def strip_parens(word: str) -> str:
-    return word[1:-1] if word[0] == '(' and word[-1] == ')' else word
+    """Remove parenthesis that completely enclose a word"""
+    if word[0] != '(' or word[-1] != ')':
+        return word
+
+    open_parens = 1
+    for char in word[1:-1]:
+        if char == '(':
+            open_parens += 1
+        elif char == ')':
+            open_parens -= 1
+            if open_parens == 0: # not completely enclosing
+                return word
+    return word[1:-1]
 
 
 def reformat_to_add_assert_equal(code: str) -> str:
@@ -21,13 +33,14 @@ def reformat_to_add_assert_equal(code: str) -> str:
 
 def add_ctest_assert_equal() -> None:
     parser = ArgumentParser()
-    parser.add_argument('filename', type=str, help='name of file to format')
+    parser.add_argument('filenames', type=str, nargs='+', help='name of file to format')
     args = parser.parse_args()
-    filepath = Path(args.filename).absolute()
-
-    code_text = filepath.read_text()
-    reformatted_text = reformat_to_add_assert_equal(code_text)
-    filepath.write_text(reformatted_text)
+    
+    for filename in args.filenames:
+        filepath = Path(filename).absolute()
+        code_text = filepath.read_text()
+        reformatted_text = reformat_to_add_assert_equal(code_text)
+        filepath.write_text(reformatted_text)
 
 
 if __name__ == "__main__":

@@ -139,12 +139,10 @@ void test_bst_add()
     bst.add(2);
     bst.add(5);
     bst.add(0);
-    std::vector<std::optional<int>> result{bst.preorder_traversal()};
-    assert(result == (std::vector<std::optional<int>>{{2}, {0}, {5}}));
+    ctest::assert_equal(bst.preorder_traversal(), std::vector<std::optional<int>>{{2}, {0}, {5}});
     bst.add(3);
     bst.add(1);
-    std::vector<std::optional<int>> result2{bst.preorder_traversal()};
-    assert(result2 == (std::vector<std::optional<int>>{{2}, {0}, {5}, {}, {1}, {3}}));
+    ctest::assert_equal(bst.preorder_traversal(), std::vector<std::optional<int>>{{2}, {0}, {5}, {}, {1}, {3}});
 }
 
 void test_bst_outstream()
@@ -172,33 +170,31 @@ void test_bst_contains()
 void test_bst_inorder_traversal()
 {
     BinaryTree<int> tree1{3, 0, 6, 5, 7, 8};
-    std::vector<int> result1{tree1.inorder_traversal()};
-    assert(result1 == (std::vector<int>{0, 3, 5, 6, 7, 8}));
+    ctest::assert_equal(tree1.inorder_traversal(), std::vector<int>{0, 3, 5, 6, 7, 8});
 
     BinaryTree<int> tree2{10, 1, 9, 2, 8, 3, 7, 4, 6, 5, 11, 15, 13, 14};
-    std::vector<int> result2{tree2.inorder_traversal()};
-    assert(result2 == (std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15}));
+    ctest::assert_equal(tree2.inorder_traversal(), std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15});
 }
 
 void test_bst_height()
 {
     // height of an empty tree is undefined I guess assert((BinaryTree<int>{}).height() == 0);
-    assert((BinaryTree{1}).height() == 0);
-    assert((BinaryTree{3, 0, 5}).height() == 1);
-    assert((BinaryTree{3, 0, 5, 6, 7, 8}).height() == 4);
+    ctest::assert_equal((BinaryTree{1}).height(), 0);
+    ctest::assert_equal((BinaryTree{3, 0, 5}).height(), 1);
+    ctest::assert_equal((BinaryTree{3, 0, 5, 6, 7, 8}).height(), 4);
     BinaryTree tree4{10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 15, 13, 14};
     long height{tree4.height()};
-    assert(height == 9);
-    assert((BinaryTree{10, 1, 9, 2, 8, 3, 7, 4, 6, 5, 11, 15, 13, 14}).height() == 9);
+    ctest::assert_equal(height, 9);
+    ctest::assert_equal((BinaryTree{10, 1, 9, 2, 8, 3, 7, 4, 6, 5, 11, 15, 13, 14}).height(), 9);
 }
 
 void test_bst_size()
 {
-    assert((BinaryTree{1}).size() == 1);
-    assert((BinaryTree{3, 0, 5}).size() == 3);
-    assert((BinaryTree{3, 0, 5, 6, 7, 8}).size() == 6);
-    assert((BinaryTree{10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 15, 13, 14}).size() == 14);
-    assert((BinaryTree{10, 1, 9, 2, 8, 3, 7, 4, 6, 5, 11, 15, 13, 14}).size() == 14);
+    ctest::assert_equal((BinaryTree{1}).size(), 1);
+    ctest::assert_equal((BinaryTree{3, 0, 5}).size(), 3);
+    ctest::assert_equal((BinaryTree{3, 0, 5, 6, 7, 8}).size(), 6);
+    ctest::assert_equal((BinaryTree{10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 15, 13, 14}).size(), 14);
+    ctest::assert_equal((BinaryTree{10, 1, 9, 2, 8, 3, 7, 4, 6, 5, 11, 15, 13, 14}).size(), 14);
 }
 
 int main()

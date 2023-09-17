@@ -3,6 +3,7 @@
 #include <iostream>
 #include <optional>
 #include "itertools.h"
+#include "ctest.h"
 
 // Deliberately implemented without smart pointers to practice RAII with pointers
 template <typename T>
@@ -104,52 +105,52 @@ private:
 void test_queue()
 {
     Queue<int> queue(1);
-    assert(queue.size() == 0);
-    assert(queue.capacity() == 1);
+    ctest::assert_equal(queue.size(), 0);
+    ctest::assert_equal(queue.capacity(), 1);
 
     queue.push_back(1);
-    assert(queue.size() == 1);
-    assert(queue.capacity() == 1);
+    ctest::assert_equal(queue.size(), 1);
+    ctest::assert_equal(queue.capacity(), 1);
 
     queue.push_back(2);
-    assert(queue.size() == 2);
-    assert(queue.capacity() == 2);
+    ctest::assert_equal(queue.size(), 2);
+    ctest::assert_equal(queue.capacity(), 2);
 
     queue.push_back(3);
-    assert(queue.size() == 3);
-    assert(queue.capacity() == 4);
+    ctest::assert_equal(queue.size(), 3);
+    ctest::assert_equal(queue.capacity(), 4);
 
-    assert(queue.pop_head() == 1);
-    assert(queue.size() == 2);
-    assert(queue.pop_head() == 2);
-    assert(queue.size() == 1);
-    assert(queue.pop_head() == 3);
-    assert(queue.size() == 0);
+    ctest::assert_equal(queue.pop_head(), 1);
+    ctest::assert_equal(queue.size(), 2);
+    ctest::assert_equal(queue.pop_head(), 2);
+    ctest::assert_equal(queue.size(), 1);
+    ctest::assert_equal(queue.pop_head(), 3);
+    ctest::assert_equal(queue.size(), 0);
 
     // now test that the popped items are removed when increasing the capacity
     queue.push_back(4);
-    assert(queue.size() == 1);
+    ctest::assert_equal(queue.size(), 1);
     queue.push_back(5);
-    assert(queue.size() == 2);
-    assert(queue.capacity() == 8);
+    ctest::assert_equal(queue.size(), 2);
+    ctest::assert_equal(queue.capacity(), 8);
 
     for (const int i : itertools::range(6, 12))
         queue.push_back(i);
-    assert(queue.size() == 8);
-    assert(queue.capacity() == 8);
+    ctest::assert_equal(queue.size(), 8);
+    ctest::assert_equal(queue.capacity(), 8);
 
     while (queue.size())
         std::cout << queue.pop_head() << std::endl;
-    assert(queue.size() == 0);
-    assert(queue.capacity() == 8);
+    ctest::assert_equal(queue.size(), 0);
+    ctest::assert_equal(queue.capacity(), 8);
 }
 
 void test_queue_initializer_list()
 {
     Queue<int> queue{5, 2, 3, 4, 5, 6};
-    assert(queue.size() == 6);
-    assert(queue.pop_head() == 5);
-    assert(queue.size() == 5);
+    ctest::assert_equal(queue.size(), 6);
+    ctest::assert_equal(queue.pop_head(), 5);
+    ctest::assert_equal(queue.size(), 5);
 }
 
 void test_queue_copy_constructor()
@@ -157,25 +158,25 @@ void test_queue_copy_constructor()
     // ensure modifying copies don't affect each other
     Queue<int> queue1{1, 2, 3};
     Queue<int> queue2(queue1);
-    assert(queue1.size() == 3);
-    assert(queue1.pop_head() == 1);
-    assert(queue1.size() == 2);
-    assert(queue2.size() == 3);
-    assert(queue2.pop_head() == 1);
-    assert(queue2.size() == 2);
+    ctest::assert_equal(queue1.size(), 3);
+    ctest::assert_equal(queue1.pop_head(), 1);
+    ctest::assert_equal(queue1.size(), 2);
+    ctest::assert_equal(queue2.size(), 3);
+    ctest::assert_equal(queue2.pop_head(), 1);
+    ctest::assert_equal(queue2.size(), 2);
 
     // ensure copying removes lazily deleted items
     Queue<int> queue3(2);
     queue3.push_back(1);
     queue3.push_back(2);
-    assert(queue3.pop_head() == 1);
-    assert(queue3.size() == 1);
+    ctest::assert_equal(queue3.pop_head(), 1);
+    ctest::assert_equal(queue3.size(), 1);
     Queue<int> queue4(queue3, 2);
-    assert(queue4.size() == 1);
+    ctest::assert_equal(queue4.size(), 1);
     queue4.push_back(3);
-    assert(queue4.size() == 2);
-    assert(queue4.capacity() == 2);
-    assert(queue4.pop_head() == 2);
+    ctest::assert_equal(queue4.size(), 2);
+    ctest::assert_equal(queue4.capacity(), 2);
+    ctest::assert_equal(queue4.pop_head(), 2);
 }
 
 void test_queue_copy_assignment()
@@ -183,12 +184,12 @@ void test_queue_copy_assignment()
     Queue<int> queue1{1, 2, 3};
     Queue<int> queue2{};
     queue2 = queue1;
-    assert(queue1.size() == 3);
-    assert(queue1.pop_head() == 1);
-    assert(queue1.size() == 2);
-    assert(queue2.size() == 3);
-    assert(queue2.pop_head() == 1);
-    assert(queue2.size() == 2);
+    ctest::assert_equal(queue1.size(), 3);
+    ctest::assert_equal(queue1.pop_head(), 1);
+    ctest::assert_equal(queue1.size(), 2);
+    ctest::assert_equal(queue2.size(), 3);
+    ctest::assert_equal(queue2.pop_head(), 1);
+    ctest::assert_equal(queue2.size(), 2);
 }
 
 void test_queue_move_assignment()
@@ -196,12 +197,12 @@ void test_queue_move_assignment()
     Queue<int> queue1{1, 2, 3};
     Queue<int> queue2{};
     queue2 = std::move(queue1); // now queue1 is invalid
-    assert(queue2.size() == 3);
-    assert(queue2.pop_head() == 1);
+    ctest::assert_equal(queue2.size(), 3);
+    ctest::assert_equal(queue2.pop_head(), 1);
     // assert(queue1.values_ptr == nullptr); // cannot even run this, get a compiler error
     queue2.push_back(4);
     for (const int queue_val : itertools::range(2, 5))
-        assert(queue2.pop_head() == queue_val);
+        ctest::assert_equal(queue2.pop_head(), queue_val);
 }
 
 void test_queue_bool()

@@ -3,6 +3,7 @@
 #include "functools.h"
 #include "itertools.h"
 #include "strlib.h"
+#include "ctest.h"
 
 // unfortunately have to static cast overloaded functions in order to construct a std::function
 std::function<std::string(bool)> bool_to_str{static_cast<std::string (*)(bool)>(&strlib::to_str)};
@@ -10,9 +11,9 @@ std::function<std::string(bool)> bool_to_str{static_cast<std::string (*)(bool)>(
 void test_any_all()
 {
     std::vector<bool> bools{true, true, false, false};
-    assert(functools::any(bools) == true);
-    assert(functools::all(bools) == false);
-    assert(functools::all(std::vector<bool>{true, true}) == true);
+    ctest::assert_equal(functools::any(bools), true);
+    ctest::assert_equal(functools::all(bools), false);
+    ctest::assert_equal(functools::all(std::vector<bool>{true, true}), true);
 }
 
 void test_map()
@@ -22,7 +23,7 @@ void test_map()
                                             { return a > 3; },
                                             nums)};
     std::vector<bool> expected_result{false, false, true, true};
-    assert(result == expected_result);
+    ctest::assert_equal(result, expected_result);
 }
 
 void test_filter()
@@ -32,7 +33,7 @@ void test_filter()
                         { return a > 3; }};
     std::vector<int> result{functools::filter(greater_than_3, nums)};
     std::vector<int> expected_result{5, 7};
-    assert(result == expected_result);
+    ctest::assert_equal(result, expected_result);
 }
 
 void test_compose()
@@ -42,7 +43,7 @@ void test_compose()
     std::function<std::string(int)> composed{functools::compose<int>(greater_than_3, bool_to_str)};
     std::string expected_result{"true"};
     std::string result{composed(5)};
-    assert(result == expected_result);
+    ctest::assert_equal(result, expected_result);
 }
 
 void test_count()
@@ -51,13 +52,13 @@ void test_count()
                         { return a > 3; }};
     std::vector<int> nums = itertools::range(1, 8, 2);
     int result{functools::count(greater_than_3, nums)};
-    assert(result == 2);
+    ctest::assert_equal(result, 2);
 }
 
 void test_sum()
 {
     int result{functools::sum(std::vector<int>{0, 1, 2, 3, 4})};
-    assert(result == 10);
+    ctest::assert_equal(result, 10);
     double result2{functools::sum(std::vector<double>{-1.333, 1.333, 2.1})};
     assert(result2 - 2.1 < .00001);
 }
@@ -76,9 +77,9 @@ void test_optional()
     std::optional<int> value{1};
     auto add_one{[](int x)
                  { return x + 1; }};
-    assert(functools::transform(add_one, value) == (std::optional<int>{2}));
+    ctest::assert_equal(functools::transform(add_one, value), std::optional<int>{2});
     std::optional<int> empty_optional{};
-    assert(functools::transform(add_one, empty_optional) == std::nullopt);
+    assert(!functools::transform(add_one, empty_optional).has_value());
 }
 
 void test_for_each()
@@ -87,7 +88,7 @@ void test_for_each()
     auto add_one{[](int &x)
                  { ++x; }};
     functools::for_each(add_one, values);
-    assert(values == (std::vector<int>{2, 3, 4, 5}));
+    ctest::assert_equal(values, std::vector<int>{2, 3, 4, 5});
 }
 
 int main()
