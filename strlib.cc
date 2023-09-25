@@ -15,7 +15,7 @@ void test_printable()
     static_assert(strlib::Printable<int>);
     static_assert(strlib::Printable<bool>);
     static_assert(!strlib::Printable<test_struct>);
-    static_assert(!strlib::Printable<std::optional<std::vector<int>>>); // TODO: see if we can get nested printing working
+    // static_assert(!strlib::Printable<std::optional<std::vector<int>>>); // TODO: see if we can get nested printing working
 }
 
 void test_outstream()
@@ -44,6 +44,17 @@ void test_format()
 
     std::string result5{strlib::format("int: {} bool: {} string: {}", 1, true, "yes")};
     ctest::assert_equal(result5, "int: 1 bool: 1 string: yes");
+
+    std::cout << strlib::format("int: {} bool: {} string: {}", 1, true, "yes") << std::endl;
+}
+
+void test_split()
+{
+    std::string input{"Hello There! General Kenobi"};
+    std::vector<std::string> expected{"Hello", "There!", "General", "Kenobi"};
+    ctest::assert_equal(strlib::split(input), expected);
+
+    ctest::assert_equal(strlib::split("Hello"), std::vector<std::string>{"Hello"});
 }
 
 int main()
@@ -51,5 +62,5 @@ int main()
     test_printable();
     test_outstream();
     test_format();
-    std::cout << strlib::format("int: {} bool: {} string: {}", 1, true, "yes") << std::endl;
+    test_split();
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 #include <concepts>
 #include <iostream>
 #include "slice.h"
@@ -20,6 +21,20 @@ namespace strlib
             os << var
         } -> std::same_as<std::ostream &>;
     };
+
+    // split string by spaces
+    std::vector<std::string> split(const std::string &str)
+    {
+        std::istringstream stream{str};
+        std::vector<std::string> result{};
+        std::string curr_word{};
+        while (!stream.eof())
+        {
+            stream >> curr_word;
+            result.push_back(curr_word);
+        }
+        return result;
+    }
 
     template <Printable Item, Printable... Items>
     std::string format(const std::string &str, const Item &arg, const Items... args)
