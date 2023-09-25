@@ -25,15 +25,18 @@ template <typename Type = std::nullopt_t, typename... Types>
 class Tuple
 {
 public:
-    Tuple(const Type &value, const Types &...remaining) : value{value}
-    {
-        if constexpr (sizeof...(remaining) > 0)
-            next_tuple = std::make_unique<Tuple<Types...>>(remaining...);
-    };
+    Tuple(const Type &value, const Types &...remaining) : value{value}, next_tuple{make_next_tuple_ptr(remaining...)} {}
 
 private:
     const Type value;
-    std::unique_ptr<Tuple<Types...>> next_tuple;
+    const std::unique_ptr<Tuple<Types...>> next_tuple;
+
+    constexpr std::unique_ptr<Tuple<Types...>> make_next_tuple_ptr(const Types &...items)
+    {
+        if constexpr (sizeof...(items) > 0)
+            return std::make_unique<Tuple<Types...>>(items...);
+        return nullptr;
+    }
 };
 
 // implement constexpr tuple size (also using struct magic)
