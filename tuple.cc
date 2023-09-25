@@ -4,6 +4,16 @@
 #include <stdexcept>
 #include "ctest.h"
 
+struct __end_of_args_sentinel
+{
+};
+
+template <typename Type = __end_of_args_sentinel, typename... Types>
+constexpr size_t num_args = 1 + num_args<Types...>;
+
+template <typename... Types>
+constexpr size_t num_args<__end_of_args_sentinel, Types...> = 0;
+
 template <size_t Idx, typename Type, typename... Types>
 struct _type_at_index
 {
@@ -26,7 +36,7 @@ template <typename Type = std::nullopt_t, typename... Types>
 class Tuple
 {
 public:
-    Tuple(const Type &value, const Types &...remaining) : value{value}, next_tuple{make_next_tuple_ptr(remaining...)} {}
+    constexpr Tuple(const Type &value, const Types &...remaining) : value{value}, next_tuple{make_next_tuple_ptr(remaining...)} {}
 
     template <size_t Idx>
     constexpr type_at_index<Idx, Type, Types...> get()
@@ -50,7 +60,11 @@ private:
     }
 };
 
-// implement constexpr tuple size (also using struct magic)
+template <typename... Types>
+constexpr int tuple_size(const Tuple<Types...> &tuple)
+{
+    return num_args<Types...>;
+}
 
 void test_get_type()
 {
@@ -58,6 +72,13 @@ void test_get_type()
     static_assert(std::same_as<type_at_index<0, int, bool, double>, int>);
     static_assert(std::same_as<type_at_index<1, int, bool, double>, bool>);
     static_assert(std::same_as<type_at_index<2, int, bool, double>, double>);
+}
+
+void test_args_size()
+{
+    static_assert(num_args<int> == 1);
+    static_assert(num_args<int, bool> == 2);
+    static_assert(num_args<int, bool, double> == 3);
 }
 
 void test_tuple()
@@ -72,10 +93,15 @@ void test_tuple()
     ctest::assert_equal(tuple3.get<0>(), 2);
     ctest::assert_equal(tuple3.get<1>(), true);
     ctest::assert_equal(tuple3.get<2>(), 4.5);
+
+    static_assert(tuple_size(tuple1) == 1);
+    static_assert(tuple_size(tuple2) == 2);
+    static_assert(tuple_size(tuple3) == 3);
 }
 
 int main()
 {
     test_get_type();
+    test_args_size();
     test_tuple();
 }
