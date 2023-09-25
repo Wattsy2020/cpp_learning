@@ -31,6 +31,8 @@ template <size_t Idx, typename Type, typename... Types>
 using type_at_index = _type_at_index<Idx, Type, Types...>::type;
 
 // TODO: is there a way to have this stack allocated (e.g. using std::optional<Tuple<Types...>> next_tuple)?
+// current problem: if next_tuple is optional, then it could potentially have infinite size
+// as each next_tuple could have their own next_tuple, so it can’t be stack allocated
 // We'd need to indicate the size of an empty Tuple<> at compile time somehow
 template <typename Type = std::nullopt_t, typename... Types>
 class Tuple
@@ -46,6 +48,15 @@ public:
             return value;
         else
             return next_tuple->template get<Idx - 1>();
+    }
+
+    friend bool operator==(const Tuple<Type, Types...> &left, const Tuple<Type, Types...> &right)
+    {
+        if (left.value != right.value)
+            return false;
+        if constexpr (sizeof...(Types) > 0)
+            return *left.next_tuple == *right.next_tuple;
+        return true;
     }
 
 private:
@@ -84,8 +95,8 @@ void test_args_size()
 void test_tuple()
 {
     Tuple<int> tuple1{1};
-    Tuple<int, bool> tuple2(2, true);
-    Tuple<int, bool, double> tuple3(2, true, 4.5);
+    Tuple<int, bool> tuple2{2, true};
+    Tuple<int, bool, double> tuple3{2, true, 4.5};
 
     ctest::assert_equal(tuple1.get<0>(), 1);
     ctest::assert_equal(tuple2.get<0>(), 2);
@@ -97,6 +108,10 @@ void test_tuple()
     static_assert(tuple_size(tuple1) == 1);
     static_assert(tuple_size(tuple2) == 2);
     static_assert(tuple_size(tuple3) == 3);
+
+    ctest::assert_equal(tuple2, tuple2);
+    ctest::assert_equal(tuple3, tuple3);
+    assert(tuple3 != (Tuple<int, bool, double>{2, true, 4.3}));
 }
 
 int main()
