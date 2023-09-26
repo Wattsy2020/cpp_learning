@@ -2,6 +2,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <variant>
 #include "ctest.h"
 
 struct __end_of_args_sentinel
@@ -27,14 +28,14 @@ struct _type_at_index<0, Type, Types...>
     using type = Type;
 };
 
-template <size_t Idx, typename Type, typename... Types>
-using type_at_index = _type_at_index<Idx, Type, Types...>::type;
+template <size_t Idx, typename... Types>
+using type_at_index = _type_at_index<Idx, Types...>::type;
 
 // TODO: is there a way to have this stack allocated (e.g. using std::optional<Tuple<Types...>> next_tuple)?
 // current problem: if next_tuple is optional, then it could potentially have infinite size
 // as each next_tuple could have their own next_tuple, so it can’t be stack allocated
 // We'd need to indicate the size of an empty Tuple<> at compile time somehow
-template <typename Type = std::nullopt_t, typename... Types>
+template <typename Type = std::monostate, typename... Types>
 class Tuple
 {
 public:
@@ -69,6 +70,24 @@ private:
             return std::make_unique<Tuple<Types...>>(items...);
         return nullptr;
     }
+};
+
+// Can use variants to stack allocate the tuple, but this requires extra space if the tuple elements don't have the same sizes
+// somehow need to create a variant array, can make a helper function for this using variadic array
+template <typename... Types>
+class StackTuple
+{
+public:
+    constexpr StackTuple(const Types &...values) : values{values...} {};
+
+    template <size_t Idx>
+    constexpr type_at_index<Idx, Types...> get()
+    {
+        return std::get<type_at_index<Idx, Types...>>(values[Idx]);
+    }
+
+private:
+    std::array<std::variant<Types...>, num_args<Types...>> values;
 };
 
 template <typename... Types>
@@ -114,9 +133,24 @@ void test_tuple()
     assert(tuple3 != (Tuple<int, bool, double>{2, true, 4.3}));
 }
 
+void test_stack_tuple()
+{
+    StackTuple<int> tuple1{1};
+    StackTuple<int, bool> tuple2{2, true};
+    StackTuple<int, bool, double> tuple3{2, true, 4.5};
+
+    ctest::assert_equal(tuple1.get<0>(), 1);
+    ctest::assert_equal(tuple2.get<0>(), 2);
+    ctest::assert_equal(tuple2.get<1>(), true);
+    ctest::assert_equal(tuple3.get<0>(), 2);
+    ctest::assert_equal(tuple3.get<1>(), true);
+    ctest::assert_equal(tuple3.get<2>(), 4.5);
+}
+
 int main()
 {
     test_get_type();
     test_args_size();
     test_tuple();
+    test_stack_tuple();
 }
