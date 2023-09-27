@@ -1,8 +1,4 @@
 #include <concepts>
-#include <memory>
-#include <optional>
-#include <stdexcept>
-#include <variant>
 #include "ctest.h"
 
 struct __end_of_args_sentinel
@@ -31,24 +27,29 @@ struct _type_at_index<0, Type, Types...>
 template <size_t Idx, typename... Types>
 using type_at_index = _type_at_index<Idx, Types...>::type;
 
-// TODO: is there a way to have this stack allocated (e.g. using std::optional<Tuple<Types...>> next_tuple)?
-// current problem: if next_tuple is optional, then it could potentially have infinite size
-// as each next_tuple could have their own next_tuple, so it can’t be stack allocated
-// We'd need to indicate the size of an empty Tuple<> at compile time somehow
-template <typename Type = std::monostate, typename... Types>
-class Tuple
+// Can declare the class, then specify the 0 argument, and >= 1 argument cases separately
+template <typename... Types>
+class Tuple;
+
+template <>
+class Tuple<>
+{
+};
+
+template <typename Type, typename... Types>
+class Tuple<Type, Types...>
 {
 public:
-    constexpr Tuple(const Type &value, const Types &...remaining) : value{value}, next_tuple{make_next_tuple_ptr(remaining...)} {}
+    constexpr Tuple(const Type &value, const Types &...remaining) : value{value}, next_tuple{Tuple<Types...>{remaining...}} {}
 
     template <size_t Idx>
-    constexpr type_at_index<Idx, Type, Types...> get()
+    constexpr type_at_index<Idx, Type, Types...> get() const
     {
         // note: use "if constexpr" to avoid compiling get_tuple_elem<-1, <>> which is an invalid template
         if constexpr (Idx == 0)
             return value;
         else
-            return next_tuple->template get<Idx - 1>();
+            return next_tuple.template get<Idx - 1>();
     }
 
     friend bool operator==(const Tuple<Type, Types...> &left, const Tuple<Type, Types...> &right)
@@ -56,38 +57,13 @@ public:
         if (left.value != right.value)
             return false;
         if constexpr (sizeof...(Types) > 0)
-            return *left.next_tuple == *right.next_tuple;
+            return left.next_tuple == right.next_tuple;
         return true;
     }
 
 private:
     const Type value;
-    const std::unique_ptr<Tuple<Types...>> next_tuple;
-
-    constexpr std::unique_ptr<Tuple<Types...>> make_next_tuple_ptr(const Types &...items)
-    {
-        if constexpr (sizeof...(items) > 0)
-            return std::make_unique<Tuple<Types...>>(items...);
-        return nullptr;
-    }
-};
-
-// Can use variants to stack allocate the tuple, but this requires extra space if the tuple elements don't have the same sizes
-// somehow need to create a variant array, can make a helper function for this using variadic array
-template <typename... Types>
-class StackTuple
-{
-public:
-    constexpr StackTuple(const Types &...values) : values{values...} {};
-
-    template <size_t Idx>
-    constexpr type_at_index<Idx, Types...> get()
-    {
-        return std::get<type_at_index<Idx, Types...>>(values[Idx]);
-    }
-
-private:
-    std::array<std::variant<Types...>, num_args<Types...>> values;
+    const Tuple<Types...> next_tuple;
 };
 
 template <typename... Types>
@@ -133,24 +109,9 @@ void test_tuple()
     assert(tuple3 != (Tuple<int, bool, double>{2, true, 4.3}));
 }
 
-void test_stack_tuple()
-{
-    StackTuple<int> tuple1{1};
-    StackTuple<int, bool> tuple2{2, true};
-    StackTuple<int, bool, double> tuple3{2, true, 4.5};
-
-    ctest::assert_equal(tuple1.get<0>(), 1);
-    ctest::assert_equal(tuple2.get<0>(), 2);
-    ctest::assert_equal(tuple2.get<1>(), true);
-    ctest::assert_equal(tuple3.get<0>(), 2);
-    ctest::assert_equal(tuple3.get<1>(), true);
-    ctest::assert_equal(tuple3.get<2>(), 4.5);
-}
-
 int main()
 {
     test_get_type();
     test_args_size();
     test_tuple();
-    test_stack_tuple();
 }
