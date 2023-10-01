@@ -43,11 +43,24 @@ public:
         // then update last to point to the new item
         std::shared_ptr<DoubleNode<T>> new_node{std::make_shared<DoubleNode<T>>(item)};
         if (length == 0)
+        {
             head->next_node = new_node;
-        last->next_node = new_node;
-        new_node->prev_node = last;
+            new_node->prev_node = head;
+        }
+        else
+        {
+            last->next_node = new_node;
+            new_node->prev_node = last;
+        }
         last = new_node;
         ++length;
+    }
+
+    // add an item and return a shared_ptr to its node
+    std::shared_ptr<DoubleNode<T>> add_and_track(const T &item)
+    {
+        add(item);
+        return last;
     }
 
     void add_left(const T item)
@@ -109,8 +122,15 @@ public:
     void remove(const int index)
     {
         itertools::validate_index(index, length);
-        std::shared_ptr<DoubleNode<T>> prev_node{get_node(index - 1)};
-        std::shared_ptr<DoubleNode<T>> following_node{prev_node->next_node->next_node};
+        remove(get_node(index));
+    }
+
+    // remove a node in this linkedlist
+    // note: doesn't check the node is contained in the linkedlist
+    void remove(const std::shared_ptr<DoubleNode<T>> &node)
+    {
+        std::shared_ptr<DoubleNode<T>> prev_node{node->prev_node};
+        std::shared_ptr<DoubleNode<T>> following_node{node->next_node};
         if (!following_node)
             last = prev_node; // removing the last item, so update it to point to prev_node
         prev_node->next_node = following_node;
