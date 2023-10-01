@@ -87,8 +87,7 @@ public:
         if (length == 0)
             return std::nullopt;
         T last_value{last->item};
-        last = last->prev_node.lock();
-        last->next_node = nullptr;
+        remove(last);
         return last_value;
     }
 
@@ -97,9 +96,7 @@ public:
         if (length == 0)
             return std::nullopt;
         T first_value{head->next_node->item};
-        auto new_first_node{head->next_node->next_node};
-        new_first_node->prev_node = head;
-        head->next_node = new_first_node;
+        remove(head->next_node);
         return first_value;
     }
 
@@ -133,9 +130,9 @@ public:
         std::shared_ptr<DoubleNode<T>> following_node{node->next_node};
         if (!following_node)
             last = prev_node; // removing the last item, so update it to point to prev_node
-        prev_node->next_node = following_node;
-        if (following_node)
+        else
             following_node->prev_node = prev_node;
+        prev_node->next_node = following_node;
         --length;
     }
 
@@ -178,15 +175,21 @@ public:
         std::shared_ptr<DoubleNode<T>> next_node;
         while (current)
         {
+            // swap next_node and prev_node, TODO: make this a method of DoubleNode
             next_node = current->next_node;
             current->next_node = current->prev_node.lock();
             current->prev_node = next_node;
             current = current->next_node;
         }
 
-        // swap head and tail
         std::swap(head, last);
-        pop(); // after swapping, tail will point to one past the last element, so remove that
+
+        // after swapping, tail will point to one past the last element, so remove that
+        std::shared_ptr<DoubleNode<T>> new_last{last->prev_node};
+        new_last->next_node = nullptr;
+        last = new_last;
+
+        // head needs to point to one before the first node
         auto new_head = std::make_shared<DoubleNode<T>>();
         new_head->next_node = head;
         head->prev_node = new_head;
@@ -195,7 +198,7 @@ public:
 
     int size() const { return length; }
 
-    operator bool() { return length > 0; }
+    operator bool() const { return length > 0; }
 
 private:
     std::shared_ptr<DoubleNode<T>> head; // points to 1 node before the first item
@@ -316,12 +319,17 @@ void test_linked_list_end_manipulation()
 
     list.pop_left();
     list.pop();
+    ctest::assert_equal(list.items(), std::vector<int>{1});
+    ctest::assert_equal(list.size(), 1);
+    ctest::assert_equal(list.pop(), 1);
+    assert(!list.pop());
     list.add_left(-10);
     list.add(10);
     list.pop();
     list.add(15);
     list.add_left(-1);
-    ctest::assert_equal(list.items(), std::vector<int>{-1, -10, 1, 15});
+    ctest::assert_equal(list.items(), std::vector<int>{-1, -10, 15});
+    ctest::assert_equal(list.size(), 3);
 }
 
 int main()
