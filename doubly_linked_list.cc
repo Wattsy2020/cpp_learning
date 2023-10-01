@@ -12,6 +12,14 @@ public:
         : item{item},
           next_node{std::shared_ptr<DoubleNode<T>>{nullptr}},
           prev_node{std::weak_ptr<DoubleNode<T>>{}} {}
+
+    void swap_order()
+    {
+        std::shared_ptr<DoubleNode<T>> temp_prev_node{prev_node.lock()};
+        prev_node = next_node;
+        next_node = temp_prev_node;
+    }
+
     T item;
     std::shared_ptr<DoubleNode<T>> next_node;
     // weak_ptr to avoid shared_ptr cycles, so the DoublyLinkedList can be deallocated after going out of scope
@@ -172,16 +180,11 @@ public:
             return;
 
         std::shared_ptr<DoubleNode<T>> current{last};
-        std::shared_ptr<DoubleNode<T>> next_node;
         while (current)
         {
-            // swap next_node and prev_node, TODO: make this a method of DoubleNode
-            next_node = current->next_node;
-            current->next_node = current->prev_node.lock();
-            current->prev_node = next_node;
+            current->swap_order();
             current = current->next_node;
         }
-
         std::swap(head, last);
 
         // after swapping, tail will point to one past the last element, so remove that
