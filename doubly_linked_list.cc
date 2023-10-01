@@ -4,22 +4,19 @@
 #include "itertools.h"
 #include "ctest.h"
 
-namespace __node
+template <typename T>
+class DoubleNode
 {
-    template <typename T>
-    class DoubleNode
-    {
-    public:
-        DoubleNode(const T item = T{})
-            : item{item},
-              next_node{std::shared_ptr<DoubleNode<T>>{nullptr}},
-              prev_node{std::weak_ptr<DoubleNode<T>>{}} {}
-        T item;
-        std::shared_ptr<DoubleNode<T>> next_node;
-        // weak_ptr to avoid shared_ptr cycles, so the DoublyLinkedList can be deallocated after going out of scope
-        std::weak_ptr<DoubleNode<T>> prev_node;
-    };
-}
+public:
+    DoubleNode(const T item = T{})
+        : item{item},
+          next_node{std::shared_ptr<DoubleNode<T>>{nullptr}},
+          prev_node{std::weak_ptr<DoubleNode<T>>{}} {}
+    T item;
+    std::shared_ptr<DoubleNode<T>> next_node;
+    // weak_ptr to avoid shared_ptr cycles, so the DoublyLinkedList can be deallocated after going out of scope
+    std::weak_ptr<DoubleNode<T>> prev_node;
+};
 
 template <typename T>
 class LinkedList
@@ -29,7 +26,7 @@ public:
 
     LinkedList() : length{0}
     {
-        head = std::make_shared<__node::DoubleNode<T>>();
+        head = std::make_shared<DoubleNode<T>>();
         last = head;
     }
 
@@ -44,7 +41,7 @@ public:
     {
         // note: need to update head if this is the first item
         // then update last to point to the new item
-        std::shared_ptr<__node::DoubleNode<T>> new_node{std::make_shared<__node::DoubleNode<T>>(item)};
+        std::shared_ptr<DoubleNode<T>> new_node{std::make_shared<DoubleNode<T>>(item)};
         if (length == 0)
             head->next_node = new_node;
         last->next_node = new_node;
@@ -55,7 +52,7 @@ public:
 
     void add_left(const T item)
     {
-        std::shared_ptr<__node::DoubleNode<T>> new_node{std::make_shared<__node::DoubleNode<T>>(item)};
+        std::shared_ptr<DoubleNode<T>> new_node{std::make_shared<DoubleNode<T>>(item)};
         if (length == 0)
         {
             last = new_node;
@@ -97,9 +94,9 @@ public:
     void insert(const int index, const T item)
     {
         itertools::validate_index(index, length);
-        std::shared_ptr<__node::DoubleNode<T>> prev_node{get_node(index - 1)};
-        std::shared_ptr<__node::DoubleNode<T>> new_node{std::make_shared<__node::DoubleNode<T>>(item)};
-        std::shared_ptr<__node::DoubleNode<T>> next_node{prev_node->next_node};
+        std::shared_ptr<DoubleNode<T>> prev_node{get_node(index - 1)};
+        std::shared_ptr<DoubleNode<T>> new_node{std::make_shared<DoubleNode<T>>(item)};
+        std::shared_ptr<DoubleNode<T>> next_node{prev_node->next_node};
         prev_node->next_node = new_node;
         new_node->next_node = next_node;
 
@@ -112,8 +109,8 @@ public:
     void remove(const int index)
     {
         itertools::validate_index(index, length);
-        std::shared_ptr<__node::DoubleNode<T>> prev_node{get_node(index - 1)};
-        std::shared_ptr<__node::DoubleNode<T>> following_node{prev_node->next_node->next_node};
+        std::shared_ptr<DoubleNode<T>> prev_node{get_node(index - 1)};
+        std::shared_ptr<DoubleNode<T>> following_node{prev_node->next_node->next_node};
         if (!following_node)
             last = prev_node; // removing the last item, so update it to point to prev_node
         prev_node->next_node = following_node;
@@ -143,7 +140,7 @@ public:
     std::vector<T> items() const
     {
         std::vector<T> result{};
-        std::shared_ptr<__node::DoubleNode<T>> current = head->next_node;
+        std::shared_ptr<DoubleNode<T>> current = head->next_node;
         while (current)
         {
             result.push_back(current->item);
@@ -157,8 +154,8 @@ public:
         if (length <= 1)
             return;
 
-        std::shared_ptr<__node::DoubleNode<T>> current{last};
-        std::shared_ptr<__node::DoubleNode<T>> next_node;
+        std::shared_ptr<DoubleNode<T>> current{last};
+        std::shared_ptr<DoubleNode<T>> next_node;
         while (current)
         {
             next_node = current->next_node;
@@ -170,7 +167,7 @@ public:
         // swap head and tail
         std::swap(head, last);
         pop(); // after swapping, tail will point to one past the last element, so remove that
-        auto new_head = std::make_shared<__node::DoubleNode<T>>();
+        auto new_head = std::make_shared<DoubleNode<T>>();
         new_head->next_node = head;
         head->prev_node = new_head;
         head = new_head;
@@ -181,14 +178,14 @@ public:
     operator bool() { return length > 0; }
 
 private:
-    std::shared_ptr<__node::DoubleNode<T>> head; // points to 1 node before the first item
-    std::shared_ptr<__node::DoubleNode<T>> last; // points to the last item
+    std::shared_ptr<DoubleNode<T>> head; // points to 1 node before the first item
+    std::shared_ptr<DoubleNode<T>> last; // points to the last item
     int length;
 
-    std::shared_ptr<__node::DoubleNode<T>> get_node(const int index)
+    std::shared_ptr<DoubleNode<T>> get_node(const int index)
     {
         assert(index >= -1 && index < length);
-        std::shared_ptr<__node::DoubleNode<T>> current = head;
+        std::shared_ptr<DoubleNode<T>> current = head;
         for (int i = -1; i < index; ++i)
             current = current->next_node;
         return current;
