@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: clang++ アクティブなファイルのビルド",
-            "command": "/opt/homebrew/Cellar/llvm/16.0.6/bin/clang++",
+            "command": "/opt/homebrew/Cellar/llvm/17.0.1/bin/clang++",
             "args": [
                 "-fcolor-diagnostics",
                 "-fansi-escape-codes",
