@@ -8,6 +8,7 @@
 #include <ranges>
 #include <iterator>
 #include <optional>
+#include "doubly_linked_list.h"
 #include "itertools.h"
 #include "functools.h"
 #include "concepts.h"
@@ -29,8 +30,8 @@ public:
         const size_t &size = set::HASHSET_INITIAL_SIZE)
         : hasher{std::hash<HashType>()},
           key_func{key_func},
-          set_values{std::vector<std::vector<ValueType>>(size)},
-          num_items{0},
+          set_values{std::vector<std::vector<std::shared_ptr<DoubleNode<ValueType>>>>(size)},
+          linked_list{},
           vec_capacity{size} {};
 
     template <std::ranges::input_range Iter>
@@ -53,7 +54,7 @@ public:
 
     size_t size() const
     {
-        return num_items;
+        return linked_list.size();
     }
 
     size_t capacity() const
@@ -63,10 +64,7 @@ public:
 
     bool contains(const ValueType &item) const
     {
-        return functools::any(
-            [item](ValueType value)
-            { return value == item; },
-            set_values[hash(item)]);
+        return bool(find_node(item));
     }
 
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
@@ -74,9 +72,9 @@ public:
     {
         if (contains(item))
             return;
-        set_values[hash(item)].push_back(item);
-        ++num_items;
-        if (num_items == vec_capacity)
+        std::shared_ptr<DoubleNode<ValueType>> node_ptr = linked_list.add_and_track(item);
+        set_values[hash(item)].push_back(node_ptr);
+        if (size() == vec_capacity)
             expand_capacity();
     }
 
@@ -101,39 +99,52 @@ public:
     {
         if (!contains(item))
             return;
-        std::erase(set_values[hash(item)], item);
-        --num_items;
+        std::shared_ptr<DoubleNode<ValueType>> to_remove{find_node(item)};
+        std::erase(set_values[hash(item)], to_remove);
+        linked_list.remove(to_remove);
     }
 
     // get the full value of the item with this key
     std::optional<ValueType> get(const HashType &key) const
     {
-        return functools::find([key, this](const ValueType &item)
-                               { return key_func(item) == key; },
-                               set_values[hash_key(key)]);
+        auto opt_shared_ptr{
+            functools::find([key, this](const std::shared_ptr<DoubleNode<ValueType>> node)
+                            { return key_func(node->item) == key; },
+                            set_values[hash_key(key)])};
+        if (opt_shared_ptr)
+            return opt_shared_ptr.value()->item;
+        return std::nullopt;
     }
 
-    // retrieve all items in the set. this is an O(n) operation
-    // insertion order is not preserved
     std::vector<ValueType> items() const
     {
-        std::vector<ValueType> result_items{};
-        for (const std::vector<ValueType> &hash_values : set_values)
-            result_items.insert(result_items.end(), hash_values.begin(), hash_values.end());
-        return result_items;
+        return linked_list.items();
     }
 
     operator bool() const
     {
-        return num_items > 0;
+        return linked_list.size() > 0;
     }
 
 private:
     const std::hash<HashType> hasher;
     const std::function<HashType(ValueType)> key_func;
-    std::vector<std::vector<ValueType>> set_values; // vector where vector[hash] is a vector containing all elements with that hash
-    size_t num_items;
+
+    // vector where vector[hash] is a vector containing all elements with that hash
     size_t vec_capacity;
+    std::vector<std::vector<std::shared_ptr<DoubleNode<ValueType>>>> set_values;
+    LinkedList<ValueType> linked_list;
+
+    // find the node storing this item
+    std::shared_ptr<DoubleNode<ValueType>> find_node(const ValueType &item) const
+    {
+        auto opt_shared_ptr{functools::find([item](const std::shared_ptr<DoubleNode<ValueType>> node)
+                                            { return node->item == item; },
+                                            set_values[hash(item)])};
+        if (opt_shared_ptr)
+            return opt_shared_ptr.value();
+        return nullptr;
+    }
 
     // doubles the vec_capacity of set_values, to reduce hash conflicts when the vec_capacity is reached
     void expand_capacity()
