@@ -35,7 +35,7 @@ public:
         queue_end_offset = other.size();
     }
 
-    Queue &operator=(const Queue &other)
+    Queue<T> &operator=(const Queue<T> &other)
     {
         // copy other into a temporary, then swap, so that the temporary variable's destructor deallocates this->values_ptr
         Queue(other).swap(*this);
@@ -48,7 +48,7 @@ public:
         other.values_ptr = nullptr; // so destructor is called on a nullptr, instead of un-initialised pointer
     }
 
-    Queue &operator=(Queue &&other)
+    Queue<T> &operator=(Queue<T> &&other)
     {
         // swap *this into a temporary variable, so that this.values_ptr is deallocated immediately after the move assignment finishes
         Queue(std::move(other)).swap(*this);
