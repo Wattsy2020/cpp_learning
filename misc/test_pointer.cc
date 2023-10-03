@@ -9,4 +9,10 @@ int main()
     delete[] pointer;
     std::cout << int_value << std::endl; // 0 after deallocation
     // lesson: if you have a reference to some memory, when that memory is deallocated the value referred to may change
+
+    // referencing without function calls
+    int a = 1;
+    int &b = a;
+    b = 2;
+    std::cout << a << " " << b << std::endl;
 }

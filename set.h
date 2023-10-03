@@ -24,13 +24,15 @@ class Set
 public:
     typedef ValueType value_type;
     typedef const ValueType *const_iterator;
+    typedef DoubleNode<ValueType> Node;
+    typedef std::vector<std::shared_ptr<Node>> CacheSet;
 
     constexpr Set(
         const std::function<HashType(ValueType)> key_func = std::identity(),
         const size_t &size = set::HASHSET_INITIAL_SIZE)
         : hasher{std::hash<HashType>()},
           key_func{key_func},
-          set_values{std::vector<std::vector<std::shared_ptr<DoubleNode<ValueType>>>>(size)},
+          set_values{std::vector<CacheSet>(size)},
           linked_list{},
           vec_capacity{size} {};
 
@@ -70,10 +72,11 @@ public:
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
     void add(const ValueType &item)
     {
-        if (contains(item))
+        CacheSet &cache_set{set_values[hash(item)]};
+        if (find_node(item, cache_set))
             return;
-        std::shared_ptr<DoubleNode<ValueType>> node_ptr = linked_list.add_and_track(item);
-        set_values[hash(item)].push_back(node_ptr);
+        std::shared_ptr<Node> node_ptr{linked_list.add_and_track(item)};
+        cache_set.push_back(node_ptr);
         if (size() == vec_capacity)
             expand_capacity();
     }
@@ -99,7 +102,7 @@ public:
     {
         if (!contains(item))
             return;
-        std::shared_ptr<DoubleNode<ValueType>> to_remove{find_node(item)};
+        std::shared_ptr<Node> to_remove{find_node(item)};
         std::erase(set_values[hash(item)], to_remove);
         linked_list.remove(to_remove);
     }
@@ -108,7 +111,7 @@ public:
     std::optional<ValueType> get(const HashType &key) const
     {
         auto opt_shared_ptr{
-            functools::find([key, this](const std::shared_ptr<DoubleNode<ValueType>> node)
+            functools::find([key, this](const std::shared_ptr<Node> node)
                             { return key_func(node->item) == key; },
                             set_values[hash_key(key)])};
         if (opt_shared_ptr)
@@ -132,15 +135,20 @@ private:
 
     // vector where vector[hash] is a vector containing all elements with that hash
     size_t vec_capacity;
-    std::vector<std::vector<std::shared_ptr<DoubleNode<ValueType>>>> set_values;
+    std::vector<CacheSet> set_values;
     LinkedList<ValueType> linked_list;
 
     // find the node storing this item
-    std::shared_ptr<DoubleNode<ValueType>> find_node(const ValueType &item) const
+    std::shared_ptr<Node> find_node(const ValueType &item) const
     {
-        auto opt_shared_ptr{functools::find([item](const std::shared_ptr<DoubleNode<ValueType>> node)
+        return find_node(item, set_values[hash(item)]);
+    }
+
+    std::shared_ptr<Node> find_node(const ValueType &item, const CacheSet &cache_set) const
+    {
+        auto opt_shared_ptr{functools::find([item](const std::shared_ptr<Node> node)
                                             { return node->item == item; },
-                                            set_values[hash(item)])};
+                                            cache_set)};
         if (opt_shared_ptr)
             return opt_shared_ptr.value();
         return nullptr;
