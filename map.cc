@@ -120,6 +120,8 @@ void test_map()
 
     test_map.set(0, "your move");
     ctest::assert_equal(test_map[0], "your move");
+    std::vector<std::tuple<int, std::string>> expected_items{{1, "general kenobi!"}, {0, "your move"}};
+    ctest::assert_equal(test_map.items(), expected_items);
 
     Map<int, std::string> to_update{};
     to_update.set(2, "you are a bold one!");
@@ -127,6 +129,8 @@ void test_map()
     ctest::assert_equal(to_update[0], "your move");
     ctest::assert_equal(to_update[1], "general kenobi!");
     ctest::assert_equal(to_update[2], "you are a bold one!");
+    std::vector<std::tuple<int, std::string>> expected_items2{{2, "you are a bold one!"}, {1, "general kenobi!"}, {0, "your move"}};
+    ctest::assert_equal(to_update.items(), expected_items2);
 }
 
 void test_map_initializer_list()

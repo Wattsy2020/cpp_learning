@@ -8,6 +8,7 @@
 #include <ranges>
 #include <iterator>
 #include <optional>
+#include <concepts>
 #include "doubly_linked_list.h"
 #include "itertools.h"
 #include "functools.h"
@@ -75,19 +76,16 @@ public:
         CacheSet &cache_set{set_values[hash(item)]};
         if (find_node(item, cache_set))
             return;
-        std::shared_ptr<Node> node_ptr{linked_list.add_and_track(item)};
-        cache_set.push_back(node_ptr);
-        if (size() == vec_capacity)
-            expand_capacity();
+        _add(cache_set, item);
     }
 
     // set item with that key to the given item, updating it if the key already exists
     void set(const HashType &key, const ValueType &to_insert)
     {
-        std::optional<ValueType> existing_item{get(key)};
-        if (existing_item)
-            remove(existing_item.value());
-        add(to_insert);
+        CacheSet &cache_set{set_values[hash_key(key)]};
+        std::shared_ptr<Node> to_remove{find_node(key, cache_set)};
+        _remove(cache_set, to_remove);
+        _add(cache_set, to_insert);
     }
 
     template <std::input_iterator Iter>
@@ -100,22 +98,18 @@ public:
 
     void remove(const ValueType &item)
     {
-        if (!contains(item))
-            return;
-        std::shared_ptr<Node> to_remove{find_node(item)};
-        std::erase(set_values[hash(item)], to_remove);
-        linked_list.remove(to_remove);
+        CacheSet &cache_set{set_values[hash(item)]};
+        std::shared_ptr<Node> to_remove{find_node(item, cache_set)};
+        _remove(cache_set, to_remove);
     }
 
     // get the full value of the item with this key
     std::optional<ValueType> get(const HashType &key) const
     {
-        auto opt_shared_ptr{
-            functools::find([key, this](const std::shared_ptr<Node> node)
-                            { return key_func(node->item) == key; },
-                            set_values[hash_key(key)])};
-        if (opt_shared_ptr)
-            return opt_shared_ptr.value()->item;
+        const CacheSet &cache_set{set_values[hash_key(key)]};
+        std::shared_ptr<Node> found_ptr{find_node(key, cache_set)};
+        if (found_ptr)
+            return found_ptr->item;
         return std::nullopt;
     }
 
@@ -152,6 +146,36 @@ private:
         if (opt_shared_ptr)
             return opt_shared_ptr.value();
         return nullptr;
+    }
+
+    std::shared_ptr<Node> find_node(const HashType &key, const CacheSet &cache_set) const
+        // only call this func when HashType is different
+        // this requires clause ensures we don't have overlapping overloaded functions
+        requires(!std::same_as<ValueType, HashType>)
+    {
+        auto opt_shared_ptr{
+            functools::find([key, this](const std::shared_ptr<Node> node)
+                            { return key_func(node->item) == key; },
+                            cache_set)};
+        if (opt_shared_ptr)
+            return opt_shared_ptr.value();
+        return nullptr;
+    }
+
+    void _add(CacheSet &cache_set, const ValueType &item)
+    {
+        std::shared_ptr<Node> node_ptr{linked_list.add_and_track(item)};
+        cache_set.push_back(node_ptr);
+        if (size() == vec_capacity)
+            expand_capacity();
+    }
+
+    void _remove(CacheSet &cache_set, const std::shared_ptr<Node> to_remove)
+    {
+        if (!to_remove)
+            return;
+        std::erase(cache_set, to_remove);
+        linked_list.remove(to_remove);
     }
 
     // doubles the vec_capacity of set_values, to reduce hash conflicts when the vec_capacity is reached
