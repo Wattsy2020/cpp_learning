@@ -38,6 +38,9 @@ void test_set_contains()
     assert(!set.contains(1004));
     set.add(1);
     set.add(1004);
+    int test_int{1};
+    for (int i = 0; i < 2000000; i++)
+        set.contains(test_int);
     assert(set.contains(1));
     assert(set.contains(1004));
     assert(!set.contains(5));

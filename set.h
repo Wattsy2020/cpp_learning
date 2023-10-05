@@ -65,13 +65,13 @@ public:
         return vec_capacity;
     }
 
-    bool contains(const ValueType &item) const
+    bool contains(const ValueType item) const
     {
         return bool(find_node(item));
     }
 
     // note mutable T shouldn't be hashed, so item should be immutable, and we can add a reference here
-    void add(const ValueType &item)
+    void add(const ValueType item)
     {
         CacheSet &cache_set{set_values[hash(item)]};
         if (find_node(item, cache_set))
@@ -80,7 +80,7 @@ public:
     }
 
     // set item with that key to the given item, updating it if the key already exists
-    void set(const HashType &key, const ValueType &to_insert)
+    void set(const HashType key, const ValueType to_insert)
     {
         CacheSet &cache_set{set_values[hash_key(key)]};
         std::shared_ptr<Node> to_remove{find_node(key, cache_set)};
@@ -104,7 +104,7 @@ public:
     }
 
     // get the full value of the item with this key
-    std::optional<ValueType> get(const HashType &key) const
+    std::optional<ValueType> get(const HashType key) const
     {
         const CacheSet &cache_set{set_values[hash_key(key)]};
         std::shared_ptr<Node> found_ptr{find_node(key, cache_set)};
@@ -133,12 +133,12 @@ private:
     LinkedList<ValueType> linked_list;
 
     // find the node storing this item
-    std::shared_ptr<Node> find_node(const ValueType &item) const
+    std::shared_ptr<Node> find_node(const ValueType item) const
     {
         return find_node(item, set_values[hash(item)]);
     }
 
-    std::shared_ptr<Node> find_node(const ValueType &item, const CacheSet &cache_set) const
+    std::shared_ptr<Node> find_node(const ValueType item, const CacheSet &cache_set) const
     {
         auto opt_shared_ptr{functools::find([item](const std::shared_ptr<Node> node)
                                             { return node->item == item; },
@@ -148,7 +148,7 @@ private:
         return nullptr;
     }
 
-    std::shared_ptr<Node> find_node(const HashType &key, const CacheSet &cache_set) const
+    std::shared_ptr<Node> find_node(const HashType key, const CacheSet &cache_set) const
         // only call this func when HashType is different
         // this requires clause ensures we don't have overlapping overloaded functions
         requires(!std::same_as<ValueType, HashType>)
@@ -162,7 +162,7 @@ private:
         return nullptr;
     }
 
-    void _add(CacheSet &cache_set, const ValueType &item)
+    void _add(CacheSet &cache_set, const ValueType item)
     {
         std::shared_ptr<Node> node_ptr{linked_list.add_and_track(item)};
         cache_set.push_back(node_ptr);
@@ -188,12 +188,12 @@ private:
         add(all_items.begin(), all_items.end());
     }
 
-    size_t hash_key(const HashType &item) const
+    size_t hash_key(const HashType item) const
     {
         return hasher(item) % vec_capacity;
     };
 
-    size_t hash(const ValueType &item) const
+    size_t hash(const ValueType item) const
     {
         return hash_key(key_func(item));
     }
